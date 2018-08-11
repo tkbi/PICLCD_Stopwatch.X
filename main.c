@@ -25,7 +25,35 @@
 #include <xc.h>
 #include "main.h"
 
+//*** configuration ************************************************************
+
+#pragma config FOSC = IRC       // internal rc oscillator
+#pragma config PLLEN = OFF      // pll off
+#pragma config FCMEN = ON       // fail-safe clock monitor on
+#pragma config PWRTEN = ON      // power-up timer on
+#pragma config BOREN = OFF      // brown-out reset off
+#pragma config WDTEN = OFF      // watchdog timer off
+#pragma config MCLRE = ON       // MCLR enabled (RA3 input pin disabled)
+#pragma config LVP = OFF        // low voltage programming off
+#pragma config XINST = OFF      // extended instruction set off
+
+//*** prototypes ***************************************************************
+
+static void __main_init_pic (void);
+
+//*** functions ****************************************************************
+
 void main (void)
 {
+    __main_init_pic();
+
     while(1);
+}
+
+//*** static functions *********************************************************
+
+static void __main_init_pic (void)
+{
+    // select the internal rc oscillator frequency to 16MHz
+    OSCCONbits.IRCF = 0b111;
 }
