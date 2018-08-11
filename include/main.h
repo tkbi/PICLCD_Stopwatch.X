@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * File:        main.c
+ * File:        main.h
  * Project:     PICLCD-Stopwatch
  * Author:      Nicolas Pannwitz (https://pic-projekte.de/)
  * Comment:
@@ -22,38 +22,23 @@
  * 
  ******************************************************************************/
 
-#include <xc.h>
-#include "main.h"
 
-//*** configuration ************************************************************
+#ifndef MAIN_H
+#define MAIN_H
 
-#pragma config FOSC = IRC       // internal rc oscillator
-#pragma config PLLEN = OFF      // pll off
-#pragma config FCMEN = ON       // fail-safe clock monitor on
-#pragma config PWRTEN = ON      // power-up timer on
-#pragma config BOREN = OFF      // brown-out reset off
-#pragma config WDTEN = OFF      // watchdog timer off
-#pragma config MCLRE = ON       // MCLR enabled (RA3 input pin disabled)
-#pragma config LVP = OFF        // low voltage programming off
-#pragma config XINST = OFF      // extended instruction set off
+#include <stdint.h>
 
-//*** prototypes ***************************************************************
+//*** define *******************************************************************
 
-static void __main_init_pic (void);
+#define _XTAL_FREQ  16000000
 
-//*** functions ****************************************************************
+//*** typedef ******************************************************************
 
-void main (void)
+typedef struct gpio_s
 {
-    __main_init_pic();
+    uint8_t* pPort;
+    uint8_t pin;
 
-    while(1);
-}
+} gpio_t;
 
-//*** static functions *********************************************************
-
-static void __main_init_pic (void)
-{
-    // select the internal rc oscillator frequency to 16MHz
-    OSCCONbits.IRCF = 0b111;
-}
+#endif

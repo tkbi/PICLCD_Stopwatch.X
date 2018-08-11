@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * File:        main.h
+ * File:        main.c
  * Project:     PICLCD-Stopwatch
  * Author:      Nicolas Pannwitz (https://pic-projekte.de/)
  * Comment:
@@ -22,10 +22,61 @@
  * 
  ******************************************************************************/
 
+#include <xc.h>
+#include <stdint.h>
+#include "main.h"
 
-#ifndef MAIN_H
-#define MAIN_H
+//*** prototypess **************************************************************
 
-//*** defines ******************************************************************
+static void __spi_power_on (void);
+static void __spi_power_off (void);
+static uint8_t __spi_send (uint8_t val);
 
-#endif
+//*** functions ****************************************************************
+
+void spi_init (void)
+{
+    // clk = FOSC/64 and clk idle state = high
+    SSPCON1 = 0b00010010;
+}
+
+void spi_send (uint8_t* pWr, uint8_t* pRd, uint8_t len)
+{
+    uint8_t i;
+    
+    __spi_power_on();
+    
+    for(i=0; i<len; i++)
+    {
+        if(pRd != NULL)
+        {
+            pRd[i] = __spi_send( pWr[i] );
+        }
+        else
+        {
+            __spi_send( pWr[i] );
+        }
+    }
+    
+    __spi_power_off();
+}
+
+//*** static functions *********************************************************
+
+static void __spi_power_on (void)
+{
+    SSPCON1bits.SSPEN = 1;
+}
+
+static void __spi_power_off (void)
+{
+    SSPCON1bits.SSPEN = 0;
+}
+
+static uint8_t __spi_send (uint8_t val)
+{
+    SSPBUF = val;
+    while( !SSPSTATbits.BF );
+
+    return SSPBUF;
+}
