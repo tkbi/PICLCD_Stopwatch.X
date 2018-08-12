@@ -53,6 +53,41 @@ void lcd_init (void)
     LCD_CS = 0;
     spi_send(buf, NULL, 9);
     LCD_CS = 1;
+    
+    __delay_ms(10);
+    
+    //lcd_return_home();
+}
+
+void lcd_return_home (void)
+{
+    uint8_t buf [2];
+ 
+    // set register selection: command
+    LCD_RS = 0;
+    
+    buf[0] = 0b00110000;    // function set (instruction table 0)
+    buf[1] = 0b00000010;    // go home
+    
+    LCD_CS = 0;
+    spi_send(buf, NULL, 2);
+    LCD_CS = 1;
+}
+
+void lcd_write (char *pStr)
+{
+    // set register selection: data
+    LCD_RS = 1;
+    LCD_CS = 0;
+    
+    while(*pStr)
+    {
+        spi_send((uint8_t*)pStr, NULL, 1);
+        
+        pStr++;
+    }
+    
+    LCD_CS = 1;
 }
 
 //*** static functions *********************************************************

@@ -48,7 +48,8 @@ void main (void)
 {
     __main_init_pic();
     lcd_init();
-
+    lcd_write("09:46:12");
+    
     while(1);
 }
 
@@ -67,4 +68,7 @@ static void __main_init_pic (void)
     // analog and digital selection
     ANSEL  = 0x00;
     ANSELH = 0x00;
+    
+    // set LB6 default high (SCL)
+    LATBbits.LB6 = 1;
 }

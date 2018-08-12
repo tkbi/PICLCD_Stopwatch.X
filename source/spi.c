@@ -38,13 +38,13 @@ void spi_init (void)
 {
     // clk = FOSC/64 and clk idle state = high
     SSPCON1 = 0b00010010;
+    
+    __spi_power_on();
 }
 
 void spi_send (uint8_t* pWr, uint8_t* pRd, uint8_t len)
 {
     uint8_t i;
-    
-    __spi_power_on();
     
     for(i=0; i<len; i++)
     {
@@ -57,8 +57,6 @@ void spi_send (uint8_t* pWr, uint8_t* pRd, uint8_t len)
             __spi_send( pWr[i] );
         }
     }
-    
-    __spi_power_off();
 }
 
 //*** static functions *********************************************************
