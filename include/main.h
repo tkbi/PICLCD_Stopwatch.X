@@ -34,11 +34,14 @@
 
 //*** typedef ******************************************************************
 
-typedef struct gpio_s
+typedef struct status_s
 {
-    uint8_t* pPort;
-    uint8_t pin;
+    uint8_t iSecond : 1;
+    
+} status_t;
 
-} gpio_t;
+//*** export *******************************************************************
+
+extern status_t status;
 
 #endif

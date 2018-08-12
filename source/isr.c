@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * File:        spi.h
+ * File:        isr.c
  * Project:     PICLCD-Stopwatch
  * Author:      Nicolas Pannwitz (https://pic-projekte.de/)
  * Comment:
@@ -22,21 +22,21 @@
  * 
  ******************************************************************************/
 
-#ifndef SPI_H
-#define SPI_H
-
-//*** include ******************************************************************
-
 #include <xc.h>
-#include <stdint.h>
+#include "timer.h"
 #include "main.h"
 
-//*** prototypes ***************************************************************
-
-/**
- * This function will initialize the serial peripheral interface (SPI).
- */
-void spi_init (void);
-void spi_send (uint8_t* pWr, uint8_t* pRd, uint8_t len);
-
-#endif
+void __interrupt() lowPrio (void)
+{
+    if( INTCONbits.TMR0IF )
+    {
+        // reset the preload value
+        TMR0  = TMR0_PL;
+        
+        // clear the interrupt flag
+        INTCONbits.TMR0IF = 0;
+        
+        // set the "one second ago" flag
+        status.iSecond = 1;
+    }
+}

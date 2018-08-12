@@ -8,6 +8,8 @@
       <itemPath>include/main.h</itemPath>
       <itemPath>include/spi.h</itemPath>
       <itemPath>include/lcd.h</itemPath>
+      <itemPath>include/timer.h</itemPath>
+      <itemPath>include/func.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -19,6 +21,9 @@
       <itemPath>source/main.c</itemPath>
       <itemPath>source/spi.c</itemPath>
       <itemPath>source/lcd.c</itemPath>
+      <itemPath>source/timer.c</itemPath>
+      <itemPath>source/func.c</itemPath>
+      <itemPath>source/isr.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -27,7 +32,6 @@
       <itemPath>README.md</itemPath>
       <itemPath>CHANGELOG.md</itemPath>
       <itemPath>.gitignore</itemPath>
-      <itemPath>post_proc.cmd</itemPath>
       <itemPath>pre_proc.cmd</itemPath>
     </logicalFolder>
   </logicalFolder>
@@ -68,8 +72,8 @@
       <makeCustomizationType>
         <makeCustomizationPreStepEnabled>true</makeCustomizationPreStepEnabled>
         <makeCustomizationPreStep>call pre_proc.cmd</makeCustomizationPreStep>
-        <makeCustomizationPostStepEnabled>true</makeCustomizationPostStepEnabled>
-        <makeCustomizationPostStep>call post_proc.cmd</makeCustomizationPostStep>
+        <makeCustomizationPostStepEnabled>false</makeCustomizationPostStepEnabled>
+        <makeCustomizationPostStep></makeCustomizationPostStep>
         <makeCustomizationPutChecksumInUserID>false</makeCustomizationPutChecksumInUserID>
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>

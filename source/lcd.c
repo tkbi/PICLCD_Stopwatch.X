@@ -46,7 +46,7 @@ void lcd_init (void)
     buf[3] = 0b01101101;    // follower control
     buf[4] = 0b01110001;    // contrast set
     buf[5] = 0b00110000;    // function set
-    buf[6] = 0b00001111;    // display on/off
+    buf[6] = 0b00001100;    // display on/off
     buf[7] = 0b00000001;    // clear display
     buf[8] = 0b00000110;    // entry mode set
     

@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=source/main.c source/spi.c source/lcd.c
+SOURCEFILES_QUOTED_IF_SPACED=source/main.c source/spi.c source/lcd.c source/timer.c source/func.c source/isr.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/source/main.p1 ${OBJECTDIR}/source/spi.p1 ${OBJECTDIR}/source/lcd.p1
-POSSIBLE_DEPFILES=${OBJECTDIR}/source/main.p1.d ${OBJECTDIR}/source/spi.p1.d ${OBJECTDIR}/source/lcd.p1.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/source/main.p1 ${OBJECTDIR}/source/spi.p1 ${OBJECTDIR}/source/lcd.p1 ${OBJECTDIR}/source/timer.p1 ${OBJECTDIR}/source/func.p1 ${OBJECTDIR}/source/isr.p1
+POSSIBLE_DEPFILES=${OBJECTDIR}/source/main.p1.d ${OBJECTDIR}/source/spi.p1.d ${OBJECTDIR}/source/lcd.p1.d ${OBJECTDIR}/source/timer.p1.d ${OBJECTDIR}/source/func.p1.d ${OBJECTDIR}/source/isr.p1.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/source/main.p1 ${OBJECTDIR}/source/spi.p1 ${OBJECTDIR}/source/lcd.p1
+OBJECTFILES=${OBJECTDIR}/source/main.p1 ${OBJECTDIR}/source/spi.p1 ${OBJECTDIR}/source/lcd.p1 ${OBJECTDIR}/source/timer.p1 ${OBJECTDIR}/source/func.p1 ${OBJECTDIR}/source/isr.p1
 
 # Source Files
-SOURCEFILES=source/main.c source/spi.c source/lcd.c
+SOURCEFILES=source/main.c source/spi.c source/lcd.c source/timer.c source/func.c source/isr.c
 
 
 CFLAGS=
@@ -85,7 +85,7 @@ FIXDEPS=fixDeps
 
 # The following macros may be used in the pre and post step lines
 Device=PIC18F13K22
-ProjectDir="C:\Users\Nico\MPLABXProjects\PICLCD_Stopwatch.X"
+ProjectDir="C:\Users\nicom\MPLABXProjects\PICLCD_Stopwatch.X"
 ConfName=default
 ImagePath="dist\default\${IMAGE_TYPE}\PICLCD_Stopwatch.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}"
 ImageDir="dist\default\${IMAGE_TYPE}"
@@ -101,10 +101,6 @@ ifneq ($(INFORMATION_MESSAGE), )
 	@echo $(INFORMATION_MESSAGE)
 endif
 	${MAKE}  -f nbproject/Makefile-default.mk dist/${CND_CONF}/${IMAGE_TYPE}/PICLCD_Stopwatch.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}
-	@echo "--------------------------------------"
-	@echo "User defined post-build step: [call post_proc.cmd]"
-	@call post_proc.cmd
-	@echo "--------------------------------------"
 
 MP_PROCESSOR_OPTION=18F13K22
 # ------------------------------------------------------------------------------------
@@ -131,6 +127,27 @@ ${OBJECTDIR}/source/lcd.p1: source/lcd.c  nbproject/Makefile-${CND_CONF}.mk
 	${MP_CC} $(MP_EXTRA_CC_PRE) -mcpu=$(MP_PROCESSOR_OPTION) -c  -D__DEBUG=1  -fno-short-double -fno-short-float -memi=wordwrite -mrom=default,-1CFC-1FFE -O0 -fasmfile -maddrqual=ignore -xassembler-with-cpp -I"include" -Wa,-a -DXPRJ_default=$(CND_CONF)  -msummary=-psect,-class,+mem,-hex,-file  -ginhx032 -Wl,--data-init -mno-keep-startup -mno-download -mdefault-config-bits $(COMPARISON_BUILD)  -std=c99 -gdwarf-3 -mstack=compiled:auto:auto:auto     -o ${OBJECTDIR}/source/lcd.p1 source/lcd.c 
 	@${FIXDEPS} ${OBJECTDIR}/source/lcd.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
 	
+${OBJECTDIR}/source/timer.p1: source/timer.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/source" 
+	@${RM} ${OBJECTDIR}/source/timer.p1.d 
+	@${RM} ${OBJECTDIR}/source/timer.p1 
+	${MP_CC} $(MP_EXTRA_CC_PRE) -mcpu=$(MP_PROCESSOR_OPTION) -c  -D__DEBUG=1  -fno-short-double -fno-short-float -memi=wordwrite -mrom=default,-1CFC-1FFE -O0 -fasmfile -maddrqual=ignore -xassembler-with-cpp -I"include" -Wa,-a -DXPRJ_default=$(CND_CONF)  -msummary=-psect,-class,+mem,-hex,-file  -ginhx032 -Wl,--data-init -mno-keep-startup -mno-download -mdefault-config-bits $(COMPARISON_BUILD)  -std=c99 -gdwarf-3 -mstack=compiled:auto:auto:auto     -o ${OBJECTDIR}/source/timer.p1 source/timer.c 
+	@${FIXDEPS} ${OBJECTDIR}/source/timer.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
+	
+${OBJECTDIR}/source/func.p1: source/func.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/source" 
+	@${RM} ${OBJECTDIR}/source/func.p1.d 
+	@${RM} ${OBJECTDIR}/source/func.p1 
+	${MP_CC} $(MP_EXTRA_CC_PRE) -mcpu=$(MP_PROCESSOR_OPTION) -c  -D__DEBUG=1  -fno-short-double -fno-short-float -memi=wordwrite -mrom=default,-1CFC-1FFE -O0 -fasmfile -maddrqual=ignore -xassembler-with-cpp -I"include" -Wa,-a -DXPRJ_default=$(CND_CONF)  -msummary=-psect,-class,+mem,-hex,-file  -ginhx032 -Wl,--data-init -mno-keep-startup -mno-download -mdefault-config-bits $(COMPARISON_BUILD)  -std=c99 -gdwarf-3 -mstack=compiled:auto:auto:auto     -o ${OBJECTDIR}/source/func.p1 source/func.c 
+	@${FIXDEPS} ${OBJECTDIR}/source/func.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
+	
+${OBJECTDIR}/source/isr.p1: source/isr.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/source" 
+	@${RM} ${OBJECTDIR}/source/isr.p1.d 
+	@${RM} ${OBJECTDIR}/source/isr.p1 
+	${MP_CC} $(MP_EXTRA_CC_PRE) -mcpu=$(MP_PROCESSOR_OPTION) -c  -D__DEBUG=1  -fno-short-double -fno-short-float -memi=wordwrite -mrom=default,-1CFC-1FFE -O0 -fasmfile -maddrqual=ignore -xassembler-with-cpp -I"include" -Wa,-a -DXPRJ_default=$(CND_CONF)  -msummary=-psect,-class,+mem,-hex,-file  -ginhx032 -Wl,--data-init -mno-keep-startup -mno-download -mdefault-config-bits $(COMPARISON_BUILD)  -std=c99 -gdwarf-3 -mstack=compiled:auto:auto:auto     -o ${OBJECTDIR}/source/isr.p1 source/isr.c 
+	@${FIXDEPS} ${OBJECTDIR}/source/isr.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
+	
 else
 ${OBJECTDIR}/source/main.p1: source/main.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}/source" 
@@ -152,6 +169,27 @@ ${OBJECTDIR}/source/lcd.p1: source/lcd.c  nbproject/Makefile-${CND_CONF}.mk
 	@${RM} ${OBJECTDIR}/source/lcd.p1 
 	${MP_CC} $(MP_EXTRA_CC_PRE) -mcpu=$(MP_PROCESSOR_OPTION) -c  -fno-short-double -fno-short-float -memi=wordwrite -mrom=default,-1CFC-1FFE -O0 -fasmfile -maddrqual=ignore -xassembler-with-cpp -I"include" -Wa,-a -DXPRJ_default=$(CND_CONF)  -msummary=-psect,-class,+mem,-hex,-file  -ginhx032 -Wl,--data-init -mno-keep-startup -mno-download -mdefault-config-bits $(COMPARISON_BUILD)  -std=c99 -gdwarf-3 -mstack=compiled:auto:auto:auto     -o ${OBJECTDIR}/source/lcd.p1 source/lcd.c 
 	@${FIXDEPS} ${OBJECTDIR}/source/lcd.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
+	
+${OBJECTDIR}/source/timer.p1: source/timer.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/source" 
+	@${RM} ${OBJECTDIR}/source/timer.p1.d 
+	@${RM} ${OBJECTDIR}/source/timer.p1 
+	${MP_CC} $(MP_EXTRA_CC_PRE) -mcpu=$(MP_PROCESSOR_OPTION) -c  -fno-short-double -fno-short-float -memi=wordwrite -mrom=default,-1CFC-1FFE -O0 -fasmfile -maddrqual=ignore -xassembler-with-cpp -I"include" -Wa,-a -DXPRJ_default=$(CND_CONF)  -msummary=-psect,-class,+mem,-hex,-file  -ginhx032 -Wl,--data-init -mno-keep-startup -mno-download -mdefault-config-bits $(COMPARISON_BUILD)  -std=c99 -gdwarf-3 -mstack=compiled:auto:auto:auto     -o ${OBJECTDIR}/source/timer.p1 source/timer.c 
+	@${FIXDEPS} ${OBJECTDIR}/source/timer.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
+	
+${OBJECTDIR}/source/func.p1: source/func.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/source" 
+	@${RM} ${OBJECTDIR}/source/func.p1.d 
+	@${RM} ${OBJECTDIR}/source/func.p1 
+	${MP_CC} $(MP_EXTRA_CC_PRE) -mcpu=$(MP_PROCESSOR_OPTION) -c  -fno-short-double -fno-short-float -memi=wordwrite -mrom=default,-1CFC-1FFE -O0 -fasmfile -maddrqual=ignore -xassembler-with-cpp -I"include" -Wa,-a -DXPRJ_default=$(CND_CONF)  -msummary=-psect,-class,+mem,-hex,-file  -ginhx032 -Wl,--data-init -mno-keep-startup -mno-download -mdefault-config-bits $(COMPARISON_BUILD)  -std=c99 -gdwarf-3 -mstack=compiled:auto:auto:auto     -o ${OBJECTDIR}/source/func.p1 source/func.c 
+	@${FIXDEPS} ${OBJECTDIR}/source/func.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
+	
+${OBJECTDIR}/source/isr.p1: source/isr.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/source" 
+	@${RM} ${OBJECTDIR}/source/isr.p1.d 
+	@${RM} ${OBJECTDIR}/source/isr.p1 
+	${MP_CC} $(MP_EXTRA_CC_PRE) -mcpu=$(MP_PROCESSOR_OPTION) -c  -fno-short-double -fno-short-float -memi=wordwrite -mrom=default,-1CFC-1FFE -O0 -fasmfile -maddrqual=ignore -xassembler-with-cpp -I"include" -Wa,-a -DXPRJ_default=$(CND_CONF)  -msummary=-psect,-class,+mem,-hex,-file  -ginhx032 -Wl,--data-init -mno-keep-startup -mno-download -mdefault-config-bits $(COMPARISON_BUILD)  -std=c99 -gdwarf-3 -mstack=compiled:auto:auto:auto     -o ${OBJECTDIR}/source/isr.p1 source/isr.c 
+	@${FIXDEPS} ${OBJECTDIR}/source/isr.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
 	
 endif
 

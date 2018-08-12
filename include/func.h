@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * File:        spi.h
+ * File:        func.h
  * Project:     PICLCD-Stopwatch
  * Author:      Nicolas Pannwitz (https://pic-projekte.de/)
  * Comment:
@@ -22,8 +22,8 @@
  * 
  ******************************************************************************/
 
-#ifndef SPI_H
-#define SPI_H
+#ifndef FUNC_H
+#define FUNC_H
 
 //*** include ******************************************************************
 
@@ -31,12 +31,18 @@
 #include <stdint.h>
 #include "main.h"
 
+//*** typedef ******************************************************************
+
+typedef struct sw_s
+{
+    uint16_t ms;
+    uint8_t s;
+    uint8_t m;
+    
+} sw_t;
+
 //*** prototypes ***************************************************************
 
-/**
- * This function will initialize the serial peripheral interface (SPI).
- */
-void spi_init (void);
-void spi_send (uint8_t* pWr, uint8_t* pRd, uint8_t len);
+void func_workload (void);
 
 #endif

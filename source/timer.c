@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * File:        spi.h
+ * File:        timer.c
  * Project:     PICLCD-Stopwatch
  * Author:      Nicolas Pannwitz (https://pic-projekte.de/)
  * Comment:
@@ -22,21 +22,25 @@
  * 
  ******************************************************************************/
 
-#ifndef SPI_H
-#define SPI_H
-
-//*** include ******************************************************************
-
 #include <xc.h>
-#include <stdint.h>
-#include "main.h"
 
-//*** prototypes ***************************************************************
+//*** functions ****************************************************************
 
-/**
- * This function will initialize the serial peripheral interface (SPI).
- */
-void spi_init (void);
-void spi_send (uint8_t* pWr, uint8_t* pRd, uint8_t len);
+void timer_init (void)
+{
+    // timer off, 8 bit, 1/64
+    T0CON = 0b01000100;
+    
+    // interrupt enable
+    INTCONbits.T0IE = 1;
+}
 
-#endif
+void timer_on (void)
+{
+    T0CONbits.TMR0ON = 1;
+}
+
+void timer_off (void)
+{
+    T0CONbits.TMR0ON = 0;
+}

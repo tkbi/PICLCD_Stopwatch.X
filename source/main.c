@@ -25,18 +25,24 @@
 #include <xc.h>
 #include "main.h"
 #include "lcd.h"
+#include "timer.h"
+#include "func.h"
 
 //*** configuration ************************************************************
 
-#pragma config FOSC = IRC       // internal rc oscillator
-#pragma config PLLEN = OFF      // pll off
-#pragma config FCMEN = ON       // fail-safe clock monitor on
-#pragma config PWRTEN = OFF     // power-up timer off
-#pragma config BOREN = OFF      // brown-out reset off
-#pragma config WDTEN = OFF      // watchdog timer off
-#pragma config MCLRE = ON       // MCLR enabled (RA3 input pin disabled)
-#pragma config LVP = OFF        // low voltage programming off
-#pragma config XINST = OFF      // extended instruction set off
+#pragma config FOSC     = IRC   // internal rc oscillator
+#pragma config PLLEN    = OFF   // pll off
+#pragma config FCMEN    = ON    // fail-safe clock monitor on
+#pragma config PWRTEN   = OFF   // power-up timer off
+#pragma config BOREN    = OFF   // brown-out reset off
+#pragma config WDTEN    = OFF   // watchdog timer off
+#pragma config MCLRE    = ON    // MCLR enabled (RA3 input pin disabled)
+#pragma config LVP      = OFF   // low voltage programming off
+#pragma config XINST    = OFF   // extended instruction set off
+
+//*** globals ******************************************************************
+
+status_t status = {0};
 
 //*** prototypes ***************************************************************
 
@@ -48,9 +54,13 @@ void main (void)
 {
     __main_init_pic();
     lcd_init();
-    lcd_write("09:46:12");
+    timer_init();
+    timer_on();
     
-    while(1);
+    while(1)
+    {
+        func_workload();
+    }
 }
 
 //*** static functions *********************************************************
@@ -71,4 +81,8 @@ static void __main_init_pic (void)
     
     // set LB6 default high (SCL)
     LATBbits.LB6 = 1;
+    
+    // enable interrupts
+    INTCONbits.GIE = 1;
+    INTCONbits.GIEL = 1;
 }

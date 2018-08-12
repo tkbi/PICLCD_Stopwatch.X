@@ -22,8 +22,8 @@
  * 
  ******************************************************************************/
 
-#ifndef SPI_H
-#define SPI_H
+#ifndef TIMER_H
+#define TIMER_H
 
 //*** include ******************************************************************
 
@@ -31,12 +31,14 @@
 #include <stdint.h>
 #include "main.h"
 
+//*** defines ******************************************************************
+
+#define TMR0_PL 0x83
+
 //*** prototypes ***************************************************************
 
-/**
- * This function will initialize the serial peripheral interface (SPI).
- */
-void spi_init (void);
-void spi_send (uint8_t* pWr, uint8_t* pRd, uint8_t len);
+void timer_init (void);
+void timer_on (void);
+void timer_off (void);
 
 #endif
