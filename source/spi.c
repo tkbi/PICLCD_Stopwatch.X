@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include "main.h"
 
-//*** prototypess **************************************************************
+//*** prototypes ***************************************************************
 
 static void __spi_power_on (void);
 static void __spi_power_off (void);

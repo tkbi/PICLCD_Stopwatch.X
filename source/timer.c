@@ -38,8 +38,22 @@ void timer_init (void)
     // enable interrupt
     PIE1bits.TMR2IE = 1;
     
-    // compare value
-    PR2 = 156;
+    // compare value (see calculation below)
+    PR2 = 156 - 1;
+    
+    /* Calculation of PR2:
+     * 
+     * Internal RC-Oscillator:  16 MHz
+     * Timer2 frequency:        16 Mhz / 4 = 4 MHz
+     * Necessary time base:     10 ms
+     * Prescaler of TIMER2:     1/16
+     * Postscaler of TIMER2:    1/16
+     * Tick count of TIMER2:    1/(4 MHz / (16*16)) = 64us
+     * Ticks for time base:     10ms / 64us = 156,25 
+     * Nominal PR2-Value:       156
+     * Error:                   0,16% (9,984ms instead of 10ms)
+     * Error-Direction:         faster
+     */
 }
 
 void timer_on (void)
