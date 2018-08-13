@@ -37,25 +37,25 @@ char* __func_time_to_str (sw_t *pSw);
 
 void func_workload (void)
 {
-    // check a new second is exceeded
-    if( status.iSecond )
+    // check if  another 10ms are passed
+    if( status.ixms )
     {
-        status.iSecond = 0;
+        status.ixms = 0;
         __func_update_stopwatch();       
     }
 }
 
-//*** staic functions **********************************************************
+//*** static functions *********************************************************
 
 void __func_update_stopwatch (void)
 {
     static sw_t sWatch = {0};
 
-    // increment the second
-    sWatch.ms++;
+    // increment milli second (+1 => +10ms)
+    sWatch.ms += 1;
     
     // 1000ms passed?
-    if( sWatch.ms > 999 )
+    if( sWatch.ms > 99)
     {
         sWatch.ms = 0;
         sWatch.s++;
@@ -66,7 +66,7 @@ void __func_update_stopwatch (void)
             sWatch.s = 0;
             sWatch.m++;
             
-            // more than 9 minutes passed?
+            // more than 99 minutes passed?
             if( sWatch.m > 99 )
             {
                 sWatch.m = 0;
@@ -83,14 +83,14 @@ char* __func_time_to_str (sw_t *pSw)
 {
     static char buf[8];
     
-    buf[0] = (pSw->m / 10) + '0';
-    buf[1] = (pSw->m % 10) + '0';
+    buf[0] = (pSw->m  / 10) + '0';
+    buf[1] = (pSw->m  % 10) + '0';
     buf[2] = ':';
-    buf[3] = (pSw->s / 10) + '0';
-    buf[4] = (pSw->s % 10) + '0';
+    buf[3] = (pSw->s  / 10) + '0';
+    buf[4] = (pSw->s  % 10) + '0';
     buf[5] = ':';
-    buf[6] = (pSw->ms / 100) + '0';
-    buf[7] = ((pSw->ms % 100) / 10) + '0';
+    buf[6] = (pSw->ms / 10) + '0';
+    buf[7] = (pSw->ms % 10) + '0';
     
     return buf;
 }

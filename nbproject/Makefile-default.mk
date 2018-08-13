@@ -85,7 +85,7 @@ FIXDEPS=fixDeps
 
 # The following macros may be used in the pre and post step lines
 Device=PIC18F13K22
-ProjectDir="C:\Users\nicom\MPLABXProjects\PICLCD_Stopwatch.X"
+ProjectDir="C:\Users\Nico\MPLABXProjects\PICLCD_Stopwatch.X"
 ConfName=default
 ImagePath="dist\default\${IMAGE_TYPE}\PICLCD_Stopwatch.X.${IMAGE_TYPE}.${OUTPUT_SUFFIX}"
 ImageDir="dist\default\${IMAGE_TYPE}"

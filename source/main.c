@@ -68,6 +68,7 @@ void main (void)
 static void __main_init_pic (void)
 {
     // select the internal rc oscillator frequency to 16MHz
+    OSCCONbits.SCS = 0b10;
     OSCCONbits.IRCF = 0b111;
     
     // set input/output direction

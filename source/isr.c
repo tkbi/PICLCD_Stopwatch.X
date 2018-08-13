@@ -28,15 +28,12 @@
 
 void __interrupt() lowPrio (void)
 {
-    if( INTCONbits.TMR0IF )
+    if( PIR1bits.TMR2IF )
     {
-        // reset the preload value
-        TMR0  = TMR0_PL;
-        
         // clear the interrupt flag
-        INTCONbits.TMR0IF = 0;
+        PIR1bits.TMR2IF = 0;
         
-        // set the "one second ago" flag
-        status.iSecond = 1;
+        // set the 10ms passed flag
+        status.ixms = 1;
     }
 }

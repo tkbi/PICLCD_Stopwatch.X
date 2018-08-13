@@ -23,24 +23,31 @@
  ******************************************************************************/
 
 #include <xc.h>
+#include "timer.h"
 
 //*** functions ****************************************************************
 
 void timer_init (void)
 {
-    // timer off, 8 bit, 1/64
-    T0CON = 0b01000100;
+    // post- and pre-scale = 1/16
+    T2CON = 0b01111010;
     
-    // interrupt enable
-    INTCONbits.T0IE = 1;
+    // low interrupt priority
+    IPR1bits.TMR2IP = 0;
+    
+    // enable interrupt
+    PIE1bits.TMR2IE = 1;
+    
+    // compare value
+    PR2 = 156;
 }
 
 void timer_on (void)
 {
-    T0CONbits.TMR0ON = 1;
+    T2CONbits.TMR2ON = 1;
 }
 
 void timer_off (void)
 {
-    T0CONbits.TMR0ON = 0;
+    T2CONbits.TMR2ON = 0;
 }

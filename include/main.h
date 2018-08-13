@@ -36,7 +36,7 @@
 
 typedef struct status_s
 {
-    uint8_t iSecond : 1;
+    uint8_t ixms : 1;
     
 } status_t;
 
