@@ -39,7 +39,7 @@ void timer_init (void)
     PIE1bits.TMR2IE = 1;
     
     // compare value (see calculation below)
-    PR2 = 156 - 1;
+    PR2 = 156;
     
     /* Calculation of PR2:
      * 
