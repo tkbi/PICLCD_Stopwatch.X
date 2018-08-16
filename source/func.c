@@ -120,8 +120,7 @@ void func_workload (void)
         {
             if(lastReleasedKey & KEY_PB)
             {
-                status.iMeas = true;
-                //__func_sw_state_machine();
+                __func_sw_state_machine();
 
                 // confirm the released key
                 lastReleasedKey &= ~KEY_PB;
