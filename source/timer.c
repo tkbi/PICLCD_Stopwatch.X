@@ -56,12 +56,15 @@ void timer_init (void)
      */
 }
 
-void timer_on (void)
+void timer_start (void)
 {
     T2CONbits.TMR2ON = 1;
 }
 
-void timer_off (void)
+void timer_stop (void)
 {
     T2CONbits.TMR2ON = 0;
+    
+    // reset the timer value
+    TMR2 = 0;
 }

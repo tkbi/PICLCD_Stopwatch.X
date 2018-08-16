@@ -29,7 +29,7 @@
 //*** prototypes ***************************************************************
 
 static void __spi_power_on (void);
-static void __spi_power_off (void);
+//static void __spi_power_off (void);
 static uint8_t __spi_send (uint8_t val);
 
 //*** functions ****************************************************************
@@ -41,6 +41,8 @@ void spi_init (void)
     
     __spi_power_on();
 }
+
+//..............................................................................
 
 void spi_send (uint8_t* pWr, uint8_t* pRd, uint8_t len)
 {
@@ -66,10 +68,12 @@ static void __spi_power_on (void)
     SSPCON1bits.SSPEN = 1;
 }
 
-static void __spi_power_off (void)
-{
-    SSPCON1bits.SSPEN = 0;
-}
+//static void __spi_power_off (void)
+//{
+//    SSPCON1bits.SSPEN = 0;
+//}
+
+//..............................................................................
 
 static uint8_t __spi_send (uint8_t val)
 {
@@ -78,3 +82,5 @@ static uint8_t __spi_send (uint8_t val)
 
     return SSPBUF;
 }
+
+//..............................................................................

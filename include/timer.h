@@ -34,7 +34,7 @@
 //*** prototypes ***************************************************************
 
 void timer_init (void);
-void timer_on (void);
-void timer_off (void);
+void timer_start (void);
+void timer_stop (void);
 
 #endif

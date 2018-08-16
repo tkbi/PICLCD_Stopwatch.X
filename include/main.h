@@ -26,7 +26,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <stdint.h>
+#include <stdbool.h>
 
 //*** define *******************************************************************
 
@@ -36,7 +36,8 @@
 
 typedef struct status_s
 {
-    uint8_t ixms : 1;
+    bool iXms       : 1;    // 10ms are passed if set
+    bool iMeas      : 1;    // measurement running right now if set
     
 } status_t;
 

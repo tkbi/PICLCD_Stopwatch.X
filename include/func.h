@@ -31,6 +31,30 @@
 #include <stdint.h>
 #include "main.h"
 
+//*** define *******************************************************************
+
+#define USR PORTAbits.RA2
+#define PB  PORTAbits.RA4
+
+// key events
+#define NO_KEY_EVENT    0
+#define KEY_PRESSED     1
+#define KEY_RELEASED    2
+
+// key bitfield
+#define KEY_PB          1
+#define KEY_USR         2
+
+// key press & hold time border values
+#define KEY_HOLD_3S     300
+#define KEY_HOLD_10S    1000
+
+// states for the stop watch' state machine
+#define SW_STATE_IDLE   0
+#define SW_STATE_RUN    1
+#define SW_STATE_STOP   2
+
+
 //*** typedef ******************************************************************
 
 typedef struct sw_s

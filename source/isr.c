@@ -23,10 +23,20 @@
  ******************************************************************************/
 
 #include <xc.h>
+#include <stdbool.h>
+
 #include "timer.h"
 #include "main.h"
 
-void __interrupt() lowPrio (void)
+//*** functions ****************************************************************
+
+void __interrupt() highPrio (void)
+{
+}
+
+//..............................................................................
+
+void __interrupt(low_priority) lowPrio (void)
 {
     if( PIR1bits.TMR2IF )
     {
@@ -34,6 +44,8 @@ void __interrupt() lowPrio (void)
         PIR1bits.TMR2IF = 0;
         
         // set the 10ms passed flag
-        status.ixms = 1;
+        status.iXms = true;
     }
 }
+
+//..............................................................................

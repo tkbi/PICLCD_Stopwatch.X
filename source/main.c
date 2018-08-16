@@ -55,7 +55,7 @@ void main (void)
     __main_init_pic();
     lcd_init();
     timer_init();
-    timer_on();
+    timer_start();
     
     while(1)
     {
@@ -80,10 +80,19 @@ static void __main_init_pic (void)
     ANSEL  = 0x00;
     ANSELH = 0x00;
     
+    // set priority to high for INT2 (USR input)
+    INTCON3bits.INT2IP = 1;
+
+    // disable INT2 (USR input) interrupt    
+    INTCON3bits.INT2IE = 0;
+    
     // set LB6 default high (SCL)
     LATBbits.LB6 = 1;
     
+    // enable interrupt priotiries
+    RCONbits.IPEN = 1;
+    
     // enable interrupts
-    INTCONbits.GIE = 1;
+    INTCONbits.GIEH = 1;
     INTCONbits.GIEL = 1;
 }

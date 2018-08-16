@@ -59,6 +59,8 @@ void lcd_init (void)
     //lcd_return_home();
 }
 
+//..............................................................................
+
 void lcd_return_home (void)
 {
     uint8_t buf [2];
@@ -73,6 +75,8 @@ void lcd_return_home (void)
     spi_send(buf, NULL, 2);
     LCD_CS = 1;
 }
+
+//..............................................................................
 
 void lcd_write (char *pStr)
 {
@@ -89,6 +93,3 @@ void lcd_write (char *pStr)
     
     LCD_CS = 1;
 }
-
-//*** static functions *********************************************************
-
