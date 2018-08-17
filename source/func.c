@@ -175,8 +175,15 @@ void func_workload (void)
     // time to go from stop to idle?
     if(stp_cnt > STP_TO_IDL_TIME)
     {
+        stp_cnt = 0;
+        
+        // clear the stop watch
         __func_clear_sw(&sWatch);
+        
+        // display the resetted time
         func_disp_sw();
+        
+        // and switch to the idle state
         state = SW_STATE_IDLE;
     }
 }

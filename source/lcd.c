@@ -107,7 +107,7 @@ void lcd_off (void)
     buf = 0b00001000;
     
     LCD_CS = 0;
-    spi_send(&buf, NULL, 9);
+    spi_send(&buf, NULL, 1);
     LCD_CS = 1;
 }
 
