@@ -31,31 +31,31 @@
 
 //*** static variables *********************************************************
 
+// stop watch' state machine
+static uint8_t state = SW_STATE_IDLE;
+
+// holds the current measurement
 static sw_t sWatch = {0};
 
-/*The [deb]ounce count variables hold the information how long a button was 
- * pressed the last time. */
+// last pressed/released key bitfields
+static uint8_t lastPressedKey = 0;
+static uint8_t lastReleasedKey = 0;
 
+// press & hold key counter
 static uint16_t debCntUSR = 0;
 static uint16_t debCntPB = 0;
 
-static uint8_t lastPressedKey = 0;
-static uint8_t lastReleasedKey = 0;
+// idle state counter
+static uint16_t idl_cnt = 0;
 
 //*** prototypes ***************************************************************
 
 /**
  * This function will update tthe stop watch and also display the new stop watch
- * value on the lcd (by calling __func_disp_sw).
+ * value on the lcd (by calling func_disp_sw).
  */
 
 void __func_update_stopwatch (void);
-
-/**
- * This function will display the current stop watch value on the LCD.
- */
-
-static void __func_disp_sw (void);
 
 /**
  * This function will convert the stop watch time (milli seconds, seconds and
@@ -100,6 +100,12 @@ static void __func_clear_sw (sw_t *pSw);
 
 static void __func_sw_state_machine (void);
 
+/**
+ * 
+ */
+
+static void __func_sleep (void);
+
 //*** functions ****************************************************************
 
 void func_workload (void)
@@ -109,19 +115,22 @@ void func_workload (void)
     {
         status.iXms = false;
 
-        // update stop watch (+10ms)
-        if( status.iMeas )
+        // update stop watch every 10ms
+        if(state == SW_STATE_RUN)
         {
             __func_update_stopwatch();
         }
         
-        // check for an key releaded event
+        // check for an key released event
         if( __func_debounce() == KEY_RELEASED )
         {
             if(lastReleasedKey & KEY_PB)
             {
                 __func_sw_state_machine();
 
+                // reset the idle counter
+                idl_cnt = 0;
+                
                 // confirm the released key
                 lastReleasedKey &= ~KEY_PB;
                 
@@ -134,13 +143,38 @@ void func_workload (void)
                 // confirm the released key
                 lastReleasedKey &= ~KEY_USR;
                 
+                // reset the idle counter
+                idl_cnt = 0;
+                
                 // trigger an event here..
                 
                 // reset the pressed & hold counter
                 debCntUSR = 0;
             }
         }
+        
+        // in idle state?
+        if(state == SW_STATE_IDLE)
+        {
+            // increase the idle counter (+10ms)
+            idl_cnt++;
+        }
     }
+    
+    // time to sleep?
+    if(idl_cnt > IDL_TO_SLP_TIME)
+    {
+        __func_sleep();
+    }
+}
+
+//..............................................................................
+
+void func_disp_sw (void)
+{
+    // display the new time
+    lcd_return_home();
+    lcd_write( __func_time_to_str(&sWatch) );
 }
 
 //*** static functions *********************************************************
@@ -171,16 +205,7 @@ void __func_update_stopwatch (void)
     }
     
     // display the new value on the LCD
-    __func_disp_sw();
-}
-
-//..............................................................................
-
-static void __func_disp_sw (void)
-{
-    // display the new time
-    lcd_return_home();
-    lcd_write( __func_time_to_str(&sWatch) );
+    func_disp_sw();
 }
 
 //..............................................................................
@@ -261,26 +286,23 @@ static void __func_clear_sw (sw_t *pSw)
 
 static void __func_sw_state_machine (void)
 {
-    static uint8_t state = SW_STATE_IDLE;
-
     switch(state)
     {
         case SW_STATE_IDLE:
         {
             // check how long the key was pressed
-            if(debCntPB > KEY_HOLD_10S)
+            if(debCntPB > KEY_HOLD_CLR)
             {
                 // delete the complete sw-memory
                 // to do
             }
-            else if(debCntPB > KEY_HOLD_3S)
+            else if(debCntPB > KEY_HOLD_SAVE)
             {
                 // save the last sw-value
                 // to do
             }
             else
             {
-                status.iMeas = true;
                 state = SW_STATE_RUN;
             }
 
@@ -290,19 +312,18 @@ static void __func_sw_state_machine (void)
         case SW_STATE_RUN:
         {
             // check how long the key was pressed
-            if(debCntPB > KEY_HOLD_10S)
+            if(debCntPB > KEY_HOLD_CLR)
             {
                 // delete the complete sw-memory
                 // to do
             }
-            else if(debCntPB > KEY_HOLD_3S)
+            else if(debCntPB > KEY_HOLD_SAVE)
             {
                 // save the last sw-value
                 // to do
             }
             else
             {
-                status.iMeas = false;
                 state = SW_STATE_STOP;
             }
 
@@ -312,12 +333,12 @@ static void __func_sw_state_machine (void)
         case SW_STATE_STOP:
         {
             // check how long the key was pressed
-            if(debCntPB > KEY_HOLD_10S)
+            if(debCntPB > KEY_HOLD_CLR)
             {
                 // delete the complete sw-memory
                 // to do
             }
-            else if(debCntPB > KEY_HOLD_3S)
+            else if(debCntPB > KEY_HOLD_SAVE)
             {
                 // save the last sw-value
                 // to do
@@ -325,13 +346,48 @@ static void __func_sw_state_machine (void)
             else
             {
                 __func_clear_sw(&sWatch);
-                __func_disp_sw();
+                func_disp_sw();
                 state = SW_STATE_IDLE;
             }
 
             break;
         }
     }
+}
+
+//..............................................................................
+
+static void __func_sleep (void)
+{
+    // shut the timer and lcd off
+    timer_stop();
+    lcd_off();  
+    
+    // reset the idle counter
+    idl_cnt = 0;
+   
+    // enable INT2 to wake up the pic  
+    INTCON3bits.INT2IE = 1;
+    
+    // clear a may existing INT2 flag
+    INTCON3bits.INT2IF = 0;
+
+    SLEEP();
+    NOP();
+    
+    // disable INT2 after wakeup   
+    INTCON3bits.INT2IE = 0;
+    
+    // turn the lcd on and display 00:00:00
+    lcd_init();
+    func_disp_sw();   
+    
+    // wait for PB is released
+    __delay_ms(100);
+    while(PB);
+    
+    // turn the timer on (normal functionallity available from now)
+    timer_start();
 }
 
 //..............................................................................

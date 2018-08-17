@@ -54,4 +54,17 @@ void lcd_return_home (void);
  */
 void lcd_write (char *pStr);
 
+/**
+ * This function will shut off the lc-display (in order to reduce the energy 
+ * consumption).
+ */
+
+void lcd_off (void);
+
+/**
+ * This function will turn on the lc-display.
+ */
+
+void lcd_on (void);
+
 #endif

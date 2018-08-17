@@ -37,7 +37,6 @@
 typedef struct status_s
 {
     bool iXms       : 1;    // 10ms are passed if set
-    bool iMeas      : 1;    // measurement running right now if set
     
 } status_t;
 

@@ -93,3 +93,39 @@ void lcd_write (char *pStr)
     
     LCD_CS = 1;
 }
+
+//..............................................................................
+
+void lcd_off (void)
+{
+    uint8_t buf;
+
+    // set register selection: command
+    LCD_RS = 0;
+    
+    // display off (bit #2 = 0)
+    buf = 0b00001000;
+    
+    LCD_CS = 0;
+    spi_send(&buf, NULL, 9);
+    LCD_CS = 1;
+}
+
+//..............................................................................
+
+void lcd_on (void)
+{
+    uint8_t buf;
+
+    // set register selection: command
+    LCD_RS = 0;
+    
+    // display on (bit #2 = 1)
+    buf = 0b00001100;
+    
+    LCD_CS = 0;
+    spi_send(&buf, NULL, 9);
+    LCD_CS = 1;
+}
+
+//..............................................................................

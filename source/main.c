@@ -53,10 +53,16 @@ static void __main_init_pic (void);
 void main (void)
 {
     __main_init_pic();
+    
+    // init the lc-display and display 00:00:00
     lcd_init();
+    func_disp_sw();
+
+    // init and start the timer
     timer_init();
     timer_start();
     
+    // go and do your job
     while(1)
     {
         func_workload();
@@ -82,9 +88,6 @@ static void __main_init_pic (void)
     
     // set priority to high for INT2 (USR input)
     INTCON3bits.INT2IP = 1;
-
-    // disable INT2 (USR input) interrupt    
-    INTCON3bits.INT2IE = 0;
     
     // set LB6 default high (SCL)
     LATBbits.LB6 = 1;
@@ -96,3 +99,5 @@ static void __main_init_pic (void)
     INTCONbits.GIEH = 1;
     INTCONbits.GIEL = 1;
 }
+
+//..............................................................................

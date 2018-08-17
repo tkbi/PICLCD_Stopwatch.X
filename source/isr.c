@@ -27,11 +27,16 @@
 
 #include "timer.h"
 #include "main.h"
+#include "lcd.h"
 
 //*** functions ****************************************************************
 
 void __interrupt() highPrio (void)
 {
+    if( INTCON3bits.INT2IF )
+    {
+        INTCON3bits.INT2IF = 0;
+    }
 }
 
 //..............................................................................

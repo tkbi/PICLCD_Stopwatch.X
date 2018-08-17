@@ -37,23 +37,25 @@
 #define PB  PORTAbits.RA4
 
 // key events
-#define NO_KEY_EVENT    0
-#define KEY_PRESSED     1
-#define KEY_RELEASED    2
+#define NO_KEY_EVENT        0
+#define KEY_PRESSED         1
+#define KEY_RELEASED        2
 
 // key bitfield
-#define KEY_PB          1
-#define KEY_USR         2
+#define KEY_PB              1
+#define KEY_USR             2
 
-// key press & hold time border values
-#define KEY_HOLD_3S     300
-#define KEY_HOLD_10S    1000
+// key press & hold time border values [10ms]
+#define KEY_HOLD_SAVE       300
+#define KEY_HOLD_CLR        1000
 
 // states for the stop watch' state machine
-#define SW_STATE_IDLE   0
-#define SW_STATE_RUN    1
-#define SW_STATE_STOP   2
+#define SW_STATE_IDLE       0
+#define SW_STATE_RUN        1
+#define SW_STATE_STOP       2
 
+// go sleeping after .. [10ms]
+#define IDL_TO_SLP_TIME     1000   
 
 //*** typedef ******************************************************************
 
@@ -67,6 +69,17 @@ typedef struct sw_s
 
 //*** prototypes ***************************************************************
 
+/**
+ * This function controlls the complete stop watch. The function has to be
+ * called at least every 10ms.
+ */
+
 void func_workload (void);
+
+/**
+ * This function will display the current stop watch value on the LCD.
+ */
+
+void func_disp_sw (void);
 
 #endif
