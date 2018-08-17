@@ -112,20 +112,3 @@ void lcd_off (void)
 }
 
 //..............................................................................
-
-void lcd_on (void)
-{
-    uint8_t buf;
-
-    // set register selection: command
-    LCD_RS = 0;
-    
-    // display on (bit #2 = 1)
-    buf = 0b00001100;
-    
-    LCD_CS = 0;
-    spi_send(&buf, NULL, 9);
-    LCD_CS = 1;
-}
-
-//..............................................................................

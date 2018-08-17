@@ -56,15 +56,9 @@ void lcd_write (char *pStr);
 
 /**
  * This function will shut off the lc-display (in order to reduce the energy 
- * consumption).
+ * consumption). Please use lcd_init() to power the lcd on again.
  */
 
 void lcd_off (void);
-
-/**
- * This function will turn on the lc-display.
- */
-
-void lcd_on (void);
 
 #endif

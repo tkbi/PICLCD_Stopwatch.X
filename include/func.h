@@ -57,6 +57,9 @@
 // go sleeping after .. [10ms]
 #define IDL_TO_SLP_TIME     1000   
 
+// go from stop to idle after .. [10ms]
+#define STP_TO_IDL_TIME     1000
+
 //*** typedef ******************************************************************
 
 typedef struct sw_s

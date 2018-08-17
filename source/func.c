@@ -45,8 +45,9 @@ static uint8_t lastReleasedKey = 0;
 static uint16_t debCntUSR = 0;
 static uint16_t debCntPB = 0;
 
-// idle state counter
+// idle/stop state counter
 static uint16_t idl_cnt = 0;
+static uint16_t stp_cnt = 0;
 
 //*** prototypes ***************************************************************
 
@@ -128,8 +129,9 @@ void func_workload (void)
             {
                 __func_sw_state_machine();
 
-                // reset the idle counter
+                // reset the counter
                 idl_cnt = 0;
+                stp_cnt = 0;
                 
                 // confirm the released key
                 lastReleasedKey &= ~KEY_PB;
@@ -153,11 +155,14 @@ void func_workload (void)
             }
         }
         
-        // in idle state?
+        // in idle or stop state?
         if(state == SW_STATE_IDLE)
         {
-            // increase the idle counter (+10ms)
             idl_cnt++;
+        }
+        else if( state == SW_STATE_STOP )
+        {
+            stp_cnt++;
         }
     }
     
@@ -165,6 +170,14 @@ void func_workload (void)
     if(idl_cnt > IDL_TO_SLP_TIME)
     {
         __func_sleep();
+    }
+    
+    // time to go from stop to idle?
+    if(stp_cnt > STP_TO_IDL_TIME)
+    {
+        __func_clear_sw(&sWatch);
+        func_disp_sw();
+        state = SW_STATE_IDLE;
     }
 }
 
