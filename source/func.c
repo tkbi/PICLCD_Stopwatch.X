@@ -316,11 +316,6 @@ static void __func_sw_state_machine (void)
                 // delete the complete sw-memory
                 // to do
             }
-            else if(debCntPB > KEY_HOLD_SAVE)
-            {
-                // save the last sw-value
-                // to do
-            }
             else
             {
                 state = SW_STATE_RUN;
@@ -331,34 +326,14 @@ static void __func_sw_state_machine (void)
         
         case SW_STATE_RUN:
         {
-            // check how long the key was pressed
-            if(debCntPB > KEY_HOLD_CLR)
-            {
-                // delete the complete sw-memory
-                // to do
-            }
-            else if(debCntPB > KEY_HOLD_SAVE)
-            {
-                // save the last sw-value
-                // to do
-            }
-            else
-            {
-                state = SW_STATE_STOP;
-            }
-
+            state = SW_STATE_STOP;
             break;
         }
         
         case SW_STATE_STOP:
         {
             // check how long the key was pressed
-            if(debCntPB > KEY_HOLD_CLR)
-            {
-                // delete the complete sw-memory
-                // to do
-            }
-            else if(debCntPB > KEY_HOLD_SAVE)
+            if(debCntPB > KEY_HOLD_SAVE)
             {
                 // save the last sw-value
                 // to do
