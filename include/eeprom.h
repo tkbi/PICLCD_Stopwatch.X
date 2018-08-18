@@ -77,4 +77,6 @@ void eeprom_25LC256_clear (void);
 
 uint8_t eeprom_25LC56_read_status_reg (void);
 
+void eeprom_25LC56_wren (void);
+
 #endif

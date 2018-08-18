@@ -87,6 +87,10 @@ static void __main_init_pic (void)
     TRISB = 0b00110000;
     TRISC = 0b00000000;
     
+    // enable pull up on RB4 (MISO)
+    INTCON2bits.RABPU = 0;
+    WPUBbits.WPUB4 = 1;
+    
     // analog and digital selection
     ANSEL  = 0x00;
     ANSELH = 0x00;

@@ -342,9 +342,11 @@ static void __func_sw_state_machine (void)
                 uart_write_buf("-> run\n");
                 
                 eeprom_25LC56_read_status_reg();
+                eeprom_25LC56_wren();
+                eeprom_25LC56_read_status_reg();
                 
-                eeprom_25LC256_write(0, buf, 32);       // remove this two test lines..
-                eeprom_25LC256_read(0, buf, 32);
+//                eeprom_25LC256_write(0, buf, 32);       // remove this two test lines..
+//                eeprom_25LC256_read(0, buf, 32);
             }
 
             break;

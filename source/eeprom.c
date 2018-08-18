@@ -150,6 +150,17 @@ void eeprom_25LC256_clear (void)
     __eeprom_25LC256_set_addr_ptr(0x0002);
 }
 
+//..............................................................................
+
+void eeprom_25LC56_wren (void)
+{
+    uint8_t buf = EEPROM_25LC256_WREN;
+    
+    EEPROM_CS = 0;
+    spi_transfer(&buf, NULL, 1);
+    EEPROM_CS = 1;
+}
+
 //*** static functions *********************************************************
 
 static uint16_t __eeprom_25LC256_get_addr_ptr (void)
