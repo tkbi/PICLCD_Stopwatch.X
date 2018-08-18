@@ -28,6 +28,11 @@
 #include "func.h"
 #include "lcd.h"
 #include "timer.h"
+#include "uart.h"
+
+//*** global variables *********************************************************
+
+uint8_t uartBuf;
 
 //*** static variables *********************************************************
 
@@ -56,7 +61,7 @@ static uint16_t stp_cnt = 0;
  * value on the lcd (by calling func_disp_sw).
  */
 
-void __func_update_stopwatch (void);
+static void __func_update_stopwatch (void);
 
 /**
  * This function will convert the stop watch time (milli seconds, seconds and
@@ -66,7 +71,7 @@ void __func_update_stopwatch (void);
  * @return Pointer to the string (char array).
  */
 
-char* __func_time_to_str (sw_t *pSw);
+static char* __func_time_to_str (sw_t *pSw);
 
 /**
  * This function will debounce the external switches (PB and USR). When a key
@@ -166,6 +171,13 @@ void func_workload (void)
         }
     }
     
+    // call the uart transfer function if data available in the tx buffer
+    if( status.iTx )
+    {
+        // the iTX flag will be cleared inside uart_tx if buffer is empty
+        uart_tx();
+    }
+    
     // time to sleep?
     if(idl_cnt > IDL_TO_SLP_TIME)
     {
@@ -199,7 +211,7 @@ void func_disp_sw (void)
 
 //*** static functions *********************************************************
 
-void __func_update_stopwatch (void)
+static void __func_update_stopwatch (void)
 {
     // increment millisecond (+1 => +10ms)
     sWatch.ms += 1;
@@ -230,7 +242,7 @@ void __func_update_stopwatch (void)
 
 //..............................................................................
 
-char* __func_time_to_str (sw_t *pSw)
+static char* __func_time_to_str (sw_t *pSw)
 {
     static char buf[8];
     
@@ -319,6 +331,7 @@ static void __func_sw_state_machine (void)
             else
             {
                 state = SW_STATE_RUN;
+                uart_write_buf("-> run\n");
             }
 
             break;
@@ -327,6 +340,7 @@ static void __func_sw_state_machine (void)
         case SW_STATE_RUN:
         {
             state = SW_STATE_STOP;
+            uart_write_buf("-> stop\n");
             break;
         }
         
@@ -343,6 +357,7 @@ static void __func_sw_state_machine (void)
                 __func_clear_sw(&sWatch);
                 func_disp_sw();
                 state = SW_STATE_IDLE;
+                uart_write_buf("-> idle\n");
             }
 
             break;
@@ -355,7 +370,7 @@ static void __func_sw_state_machine (void)
 static void __func_sleep (void)
 {
     // shut the timer and lcd off
-    timer_stop();
+    timer2_stop();
     lcd_off();  
     
     // reset the idle counter
@@ -382,7 +397,7 @@ static void __func_sleep (void)
     while(PB);
     
     // turn the timer on (normal functionallity available from now)
-    timer_start();
+    timer2_start();
 }
 
 //..............................................................................

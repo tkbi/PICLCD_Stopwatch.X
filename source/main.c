@@ -27,6 +27,7 @@
 #include "lcd.h"
 #include "timer.h"
 #include "func.h"
+#include "uart.h"
 
 //*** configuration ************************************************************
 
@@ -52,15 +53,18 @@ static void __main_init_pic (void);
 
 void main (void)
 {
+    // init pic and uart
     __main_init_pic();
-    
-    // init the lc-display and display 00:00:00
+    uart_init();
+
+    // init the lcd and display 00:00:00
     lcd_init();
     func_disp_sw();
 
-    // init and start the timer
-    timer_init();
-    timer_start();
+    // init and start the timer 0 and 2
+    timer0_init();
+    timer2_init();
+    timer2_start();
     
     // go and do your job
     while(1)

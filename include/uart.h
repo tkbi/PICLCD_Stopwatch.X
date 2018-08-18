@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * File:        main.h
+ * File:        uart.h
  * Project:     PICLCD-Stopwatch
  * Author:      Nicolas Pannwitz (https://pic-projekte.de/)
  * Comment:
@@ -22,31 +22,44 @@
  * 
  ******************************************************************************/
 
+#ifndef UART_H
+#define UART_H
 
-#ifndef MAIN_H
-#define MAIN_H
+//*** include ******************************************************************
 
+#include <xc.h>
 #include <stdbool.h>
 
 //*** define *******************************************************************
 
-#define _XTAL_FREQ  16000000
+#define UART_BUF_MAX    32
 
-//*** typedef ******************************************************************
+//*** extern *******************************************************************
 
-// The status struct contains several flags that are important for the work of
-// the stop watch and will be checked within the func_workload function.
+extern char inBuf [UART_BUF_MAX];
+extern char *pInBufWr;
+extern char *pInBufRd;
 
-typedef struct status_s
-{
-    bool iXms       : 1;    // next 10ms passed
-    bool iRx        : 1;    // data inside UART rx buffer available
-    bool iTx        : 1;    // data inside UART tx buffer available
-    
-} status_t;
+//*** prototypes ***************************************************************
 
-//*** export *******************************************************************
+/**
+ * This function will initialize the UART interface and enables it's high
+ * priority interrupt.
+ */
 
-extern status_t status;
+void uart_init(void);
 
+/**
+ * 
+ * @param pBuf
+ */
+
+void uart_write_buf (char *pBuf);
+
+/**
+ * 
+ */
+
+void uart_tx (void);
+ 
 #endif

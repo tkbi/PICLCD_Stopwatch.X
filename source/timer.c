@@ -25,9 +25,90 @@
 #include <xc.h>
 #include "timer.h"
 
+//*** golabl variables *********************************************************
+
+static struct tOut_s tOut[MAX_TOUT];
+
 //*** functions ****************************************************************
 
-void timer_init (void)
+void timer0_init (void)
+{
+    // 8 bit, 1/16 -> T0IF every ~1ms
+    T0CON = 0b01000011;
+    
+    // set its interrupt prio to low
+    INTCON2bits.TMR0IP = 0;
+    
+    // enable T0IF, prio low
+    INTCONbits.T0IE = 1;
+    
+    // start the timer
+    T0CONbits.TMR0ON = 1;
+}
+
+//..............................................................................
+
+int8_t timer0_new_timeout (uint16_t ms)
+{
+    int8_t i = 0;
+
+    // find a free timeout counter
+    while( tOut[i].inUse && (i < MAX_TOUT) )
+    {
+        i++;
+    }
+    
+    // mark the tOut as "in use"
+    if(i < MAX_TOUT)
+    {
+        tOut[i].inUse = true;
+        tOut[i].cnt = ms;
+    }
+    else
+    {
+        // no free timeout slot found
+        i = -1;
+    }
+
+    return i;
+}
+
+//..............................................................................
+
+void timer0_decrease_timeout (void)
+{
+    uint8_t i = 0;
+
+    while(i < MAX_TOUT)
+    {
+        if(tOut[i].inUse && tOut[i].cnt)
+        {
+            tOut[i].cnt--;
+        }
+
+        // next timeout
+        i++;
+    }
+}
+
+//..............................................................................
+
+bool timer0_get_timeout (uint8_t i)
+{
+    return (tOut[i].cnt == 0 && tOut[i].inUse);
+}
+
+//..............................................................................
+
+void timer0_clear_timeout (uint8_t i)
+{
+    tOut[i].inUse = false;
+    tOut[i].cnt = 0;
+}
+
+//..............................................................................
+
+void timer2_init (void)
 {
     // post- and pre-scale = 1/16
     T2CON = 0b01111010;
@@ -56,15 +137,21 @@ void timer_init (void)
      */
 }
 
-void timer_start (void)
+//..............................................................................
+
+void timer2_start (void)
 {
     T2CONbits.TMR2ON = 1;
 }
 
-void timer_stop (void)
+//..............................................................................
+
+void timer2_stop (void)
 {
     T2CONbits.TMR2ON = 0;
     
     // reset the timer value
     TMR2 = 0;
 }
+
+//..............................................................................

@@ -31,10 +31,71 @@
 #include <stdint.h>
 #include "main.h"
 
+//*** struct *******************************************************************
+
+struct tOut_s
+{
+    bool inUse;
+    uint16_t cnt;
+};
+
+//*** define *******************************************************************
+
+#define MAX_TOUT    4
+
 //*** prototypes ***************************************************************
 
-void timer_init (void);
-void timer_start (void);
-void timer_stop (void);
+/**
+ * 
+ */
+
+void timer0_init (void);
+
+/**
+ * 
+ * @param t
+ * @return 
+ */
+
+int8_t timer0_new_timeout (uint16_t ms);
+
+/**
+ * 
+ */
+
+void timer0_decrease_timeout (void);
+
+/**
+ * 
+ * @param i
+ * @return 
+ */
+
+bool timer0_get_timeout (uint8_t i);
+
+/**
+ * 
+ * @param i
+ */
+
+void timer0_clear_timeout (uint8_t i);
+
+/**
+ * 
+ */
+
+void timer2_init (void);
+
+/**
+ * 
+ */
+
+void timer2_start (void);
+
+/**
+ * 
+ */
+
+void timer2_stop (void);
 
 #endif

@@ -10,6 +10,7 @@
       <itemPath>include/lcd.h</itemPath>
       <itemPath>include/timer.h</itemPath>
       <itemPath>include/func.h</itemPath>
+      <itemPath>include/uart.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -24,6 +25,7 @@
       <itemPath>source/timer.c</itemPath>
       <itemPath>source/func.c</itemPath>
       <itemPath>source/isr.c</itemPath>
+      <itemPath>source/uart.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
