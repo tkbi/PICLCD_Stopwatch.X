@@ -29,10 +29,12 @@
 #include "lcd.h"
 #include "timer.h"
 #include "uart.h"
+#include "eeprom.h"
 
 //*** global variables *********************************************************
 
 uint8_t uartBuf;
+char hex[3];
 
 //*** static variables *********************************************************
 
@@ -107,10 +109,14 @@ static void __func_clear_sw (sw_t *pSw);
 static void __func_sw_state_machine (void);
 
 /**
- * 
+ * The PIC will go sleeping if you call this function. Normally this function
+ * wont be called manually. The stop watch will automatically call the function
+ * it it remains longer than STP_TO_IDL_TIME * 10ms in the idle state.
  */
 
 static void __func_sleep (void);
+
+char* __func_uint8_to_hex (uint8_t val);
 
 //*** functions ****************************************************************
 
@@ -318,6 +324,8 @@ static void __func_clear_sw (sw_t *pSw)
 
 static void __func_sw_state_machine (void)
 {
+    uint8_t buf[32];
+
     switch(state)
     {
         case SW_STATE_IDLE:
@@ -332,6 +340,11 @@ static void __func_sw_state_machine (void)
             {
                 state = SW_STATE_RUN;
                 uart_write_buf("-> run\n");
+                
+                eeprom_25LC56_read_status_reg();
+                
+                eeprom_25LC256_write(0, buf, 32);       // remove this two test lines..
+                eeprom_25LC256_read(0, buf, 32);
             }
 
             break;
@@ -398,6 +411,21 @@ static void __func_sleep (void)
     
     // turn the timer on (normal functionallity available from now)
     timer2_start();
+}
+
+//..............................................................................
+
+char* __func_uint8_to_hex (uint8_t val)
+{
+    hex[0] = val / 16 + '0';
+    hex[1] = val % 16 + '0';
+    
+    if( hex[0] > '9' ) hex[0] += 7;
+    if( hex[1] > '9' ) hex[1] += 7;
+    
+    hex[2] = '\0';
+
+    return hex;
 }
 
 //..............................................................................

@@ -28,54 +28,60 @@
 
 //*** prototypes ***************************************************************
 
-static void __spi_power_on (void);
-//static void __spi_power_off (void);
-static uint8_t __spi_send (uint8_t val);
+/**
+ * This function will send and receive bytes over the serial peripheral 
+ * interface (SPI).
+ * 
+ * @param val Byte to send
+ * @return Received byte
+ */
+
+static uint8_t __spi_rxtx (uint8_t val);
 
 //*** functions ****************************************************************
 
 void spi_init (void)
 {
-    // clk = FOSC/64 and clk idle state = high
-    SSPCON1 = 0b00010010;
-    
-    __spi_power_on();
+    // clk = FOSC/64 and clk idle state = low (Bit #4)
+    SSPCON1 = 0b00110010;
 }
 
 //..............................................................................
 
-void spi_send (uint8_t* pWr, uint8_t* pRd, uint8_t len)
+void spi_transfer (uint8_t* pWr, uint8_t* pRd, uint8_t len)
 {
-    uint8_t i;
+    uint8_t i, dummy = 0;
     
+    // abort if read and write pointer are NULL
+    if(pWr == NULL && pRd == NULL)
+    {
+        return;
+    }
+    
+    // start reading and/or writing
     for(i=0; i<len; i++)
     {
-        if(pRd != NULL)
+        if(pWr && pRd)
         {
-            pRd[i] = __spi_send( pWr[i] );
+            // write and read
+            pRd[i] = __spi_rxtx( pWr[i] );
+        }
+        else if(pWr == NULL)
+        {
+            // read only (will send dummy byte 0x00)
+            pRd[i] = __spi_rxtx(dummy);
         }
         else
         {
-            __spi_send( pWr[i] );
+            // write only (return value discarded)
+            __spi_rxtx( pWr[i] );
         }
     }
 }
 
 //*** static functions *********************************************************
 
-static void __spi_power_on (void)
-{
-    SSPCON1bits.SSPEN = 1;
-}
-
-//static void __spi_power_off (void)
-//{
-//    SSPCON1bits.SSPEN = 0;
-//}
-
-//..............................................................................
-
-static uint8_t __spi_send (uint8_t val)
+static uint8_t __spi_rxtx (uint8_t val)
 {
     SSPBUF = val;
     while( !SSPSTATbits.BF );

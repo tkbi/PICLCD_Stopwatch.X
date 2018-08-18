@@ -28,6 +28,7 @@
 #include "timer.h"
 #include "func.h"
 #include "uart.h"
+#include "eeprom.h"
 
 //*** configuration ************************************************************
 
@@ -56,7 +57,7 @@ void main (void)
     // init pic and uart
     __main_init_pic();
     uart_init();
-
+    
     // init the lcd and display 00:00:00
     lcd_init();
     func_disp_sw();
@@ -93,15 +94,17 @@ static void __main_init_pic (void)
     // set priority to high for INT2 (USR input)
     INTCON3bits.INT2IP = 1;
     
-    // set LB6 default high (SCL)
-    LATBbits.LB6 = 1;
-    
     // enable interrupt priotiries
     RCONbits.IPEN = 1;
     
     // enable interrupts
     INTCONbits.GIEH = 1;
     INTCONbits.GIEL = 1;
+    
+    // some further initial GPIO settings
+    EEPROM_CS = 1;
+    // set LB6 default high (SCL)
+    LATBbits.LB6 = 1;
 }
 
 //..............................................................................

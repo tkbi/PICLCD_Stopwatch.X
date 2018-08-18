@@ -11,6 +11,7 @@
       <itemPath>include/timer.h</itemPath>
       <itemPath>include/func.h</itemPath>
       <itemPath>include/uart.h</itemPath>
+      <itemPath>include/eeprom.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -26,6 +27,7 @@
       <itemPath>source/func.c</itemPath>
       <itemPath>source/isr.c</itemPath>
       <itemPath>source/uart.c</itemPath>
+      <itemPath>source/eeprom.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

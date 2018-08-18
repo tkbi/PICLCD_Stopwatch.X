@@ -51,7 +51,7 @@ void lcd_init (void)
     buf[8] = 0b00000110;    // entry mode set
     
     LCD_CS = 0;
-    spi_send(buf, NULL, 9);
+    spi_transfer(buf, NULL, 9);
     LCD_CS = 1;
     
     __delay_ms(10);
@@ -72,7 +72,7 @@ void lcd_return_home (void)
     buf[1] = 0b00000010;    // go home
     
     LCD_CS = 0;
-    spi_send(buf, NULL, 2);
+    spi_transfer(buf, NULL, 2);
     LCD_CS = 1;
 }
 
@@ -86,8 +86,7 @@ void lcd_write (char *pStr)
     
     while(*pStr)
     {
-        spi_send((uint8_t*)pStr, NULL, 1);
-        
+        spi_transfer((uint8_t*)pStr, NULL, 1);
         pStr++;
     }
     
@@ -107,7 +106,7 @@ void lcd_off (void)
     buf = 0b00001000;
     
     LCD_CS = 0;
-    spi_send(&buf, NULL, 1);
+    spi_transfer(&buf, NULL, 1);
     LCD_CS = 1;
 }
 

@@ -48,6 +48,6 @@ void spi_init (void);
  * @param len Length of data to send/receive.
  */
 
-void spi_send (uint8_t* pWr, uint8_t* pRd, uint8_t len);
+void spi_transfer (uint8_t* pWr, uint8_t* pRd, uint8_t len);
 
 #endif
