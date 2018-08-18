@@ -37,6 +37,17 @@
  * This function will initialize the serial peripheral interface (SPI).
  */
 void spi_init (void);
+
+/**
+ * Use this function to send/receive data via the serial peripheral interface
+ * (SPI). You have to define the length within the parameters as well as the
+ * read and write pointers.
+ * 
+ * @param pWr Pointer to the write buffer.
+ * @param pRd Pointer to the read buffer.
+ * @param len Length of data to send/receive.
+ */
+
 void spi_send (uint8_t* pWr, uint8_t* pRd, uint8_t len);
 
 #endif

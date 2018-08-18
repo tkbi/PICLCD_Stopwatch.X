@@ -50,14 +50,19 @@ extern char *pInBufRd;
 void uart_init(void);
 
 /**
+ * Please use this function to send messages over the uart interface. The data
+ * will be moved into an internal fifo ringbuffer. Afterwards the data will be
+ * shifted out if the cpu has some time left.
  * 
- * @param pBuf
+ * @param pBuf Pointer to the message (string / char array with trailin zero).
  */
 
 void uart_write_buf (char *pBuf);
 
 /**
- * 
+ * Don't call this function by your own. It will be called within the
+ * func_workload function and automatically sends the tx-ringbuffer if data is
+ * available and the cpu has some free time.
  */
 
 void uart_tx (void);
