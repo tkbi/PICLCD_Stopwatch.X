@@ -51,8 +51,9 @@ void lcd_return_home (void);
  * You can write a string to the lcd by using this function.
  * 
  * @param pStr  Pointer to a string which shall be written on the display.
+ * @param addr  The DDRAM address to write the string to.
  */
-void lcd_write (char *pStr);
+void lcd_write (char *pStr, uint8_t addr);
 
 /**
  * This function will shut off the lc-display (in order to reduce the energy 

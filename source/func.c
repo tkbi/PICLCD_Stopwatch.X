@@ -52,9 +52,8 @@ static uint8_t lastReleasedKey = 0;
 static uint16_t debCntUSR = 0;
 static uint16_t debCntPB = 0;
 
-// idle/stop state counter
-static uint16_t idl_cnt = 0;
-static uint16_t stp_cnt = 0;
+// state counter
+static uint16_t state_cnt = 0;
 
 //*** prototypes ***************************************************************
 
@@ -116,7 +115,19 @@ static void __func_sw_state_machine (void);
 
 static void __func_sleep (void);
 
-char* __func_uint8_to_hex (uint8_t val);
+///**
+// * 
+// * @param val
+// * @return 
+// */
+//
+//static char* __func_uint8_to_hex (uint8_t val);
+
+/**
+ * 
+ */
+
+static void __func_auto_time_behaviour (void);
 
 //*** functions ****************************************************************
 
@@ -127,6 +138,9 @@ void func_workload (void)
     {
         status.iXms = false;
 
+        // increase the state counter
+        state_cnt++;
+        
         // update stop watch every 10ms
         if(state == SW_STATE_RUN)
         {
@@ -136,13 +150,12 @@ void func_workload (void)
         // check for an key released event
         if( __func_debounce() == KEY_RELEASED )
         {
+            // whenever the button was pressed reset the state counter
+            state_cnt = 0;
+
             if(lastReleasedKey & KEY_PB)
             {
                 __func_sw_state_machine();
-
-                // reset the counter
-                idl_cnt = 0;
-                stp_cnt = 0;
                 
                 // confirm the released key
                 lastReleasedKey &= ~KEY_PB;
@@ -156,24 +169,11 @@ void func_workload (void)
                 // confirm the released key
                 lastReleasedKey &= ~KEY_USR;
                 
-                // reset the idle counter
-                idl_cnt = 0;
-                
                 // trigger an event here..
                 
                 // reset the pressed & hold counter
                 debCntUSR = 0;
             }
-        }
-        
-        // in idle or stop state?
-        if(state == SW_STATE_IDLE)
-        {
-            idl_cnt++;
-        }
-        else if( state == SW_STATE_STOP )
-        {
-            stp_cnt++;
         }
     }
     
@@ -184,26 +184,9 @@ void func_workload (void)
         uart_tx();
     }
     
-    // time to sleep?
-    if(idl_cnt > IDL_TO_SLP_TIME)
-    {
-        __func_sleep();
-    }
-    
-    // time to go from stop to idle?
-    if(stp_cnt > STP_TO_IDL_TIME)
-    {
-        stp_cnt = 0;
-        
-        // clear the stop watch
-        __func_clear_sw(&sWatch);
-        
-        // display the resetted time
-        func_disp_sw();
-        
-        // and switch to the idle state
-        state = SW_STATE_IDLE;
-    }
+    // manage the automatically time behaviour of the stop watch
+    // (e.g. automatically go sleeping after .. ms in idle state ..)
+    __func_auto_time_behaviour();
 }
 
 //..............................................................................
@@ -211,8 +194,7 @@ void func_workload (void)
 void func_disp_sw (void)
 {
     // display the new time
-    lcd_return_home();
-    lcd_write( __func_time_to_str(&sWatch) );
+    lcd_write( __func_time_to_str(&sWatch), 0x00 );
 }
 
 //*** static functions *********************************************************
@@ -324,45 +306,33 @@ static void __func_clear_sw (sw_t *pSw)
 
 static void __func_sw_state_machine (void)
 {
-    uint8_t buf[32];
-    buf[0] = 0xA5;
-
     switch(state)
     {
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         case SW_STATE_IDLE:
         {
             // check how long the key was pressed
             if(debCntPB > KEY_HOLD_CLR)
             {
-                // delete the complete sw-memory
-                // to do
+                // display some status info
+                lcd_write("Clear?",0);
+                state = SW_STATE_CLR;
             }
             else
             {
+                // start a new measurement
                 state = SW_STATE_RUN;
-                uart_write_buf("-> run\n");
-                
-                
-                eeprom_25LC56_read_status_reg();
-                __delay_us(20);
-                eeprom_25LC256_write(0x55,buf,1);
-                __delay_us(20);
-                eeprom_25LC256_read(0x55,buf,1);
-                
-//                eeprom_25LC256_write(0, buf, 32);       // remove this two test lines..
-//                eeprom_25LC256_read(0, buf, 32);
             }
 
             break;
         }
-        
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         case SW_STATE_RUN:
         {
             state = SW_STATE_STOP;
-            uart_write_buf("-> stop\n");
             break;
         }
-        
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         case SW_STATE_STOP:
         {
             // check how long the key was pressed
@@ -376,11 +346,43 @@ static void __func_sw_state_machine (void)
                 __func_clear_sw(&sWatch);
                 func_disp_sw();
                 state = SW_STATE_IDLE;
-                uart_write_buf("-> idle\n");
             }
 
             break;
         }
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        case SW_STATE_CLR:
+        {
+            // if the program counter got here the user confirmed to "clear"
+            // the complete stop watch memory
+            eeprom_25LC256_clear();
+            
+            // display an user information that the memory was "cleared"
+            // change "Clear?" to "Cleared!"
+            lcd_write("ed!",5);
+                    
+            // and go into the cleared state (just wait some time here to 
+            // display the message and go back to idle)
+            state = SW_STATE_CLRD;
+
+            break;
+        }
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        case SW_STATE_CLRD:
+        {
+            // if the program counter got here the user pushed the button again
+            // to faster switch from state cleared to idle
+            __func_clear_sw(&sWatch);
+            
+            // display again the 00:00:00
+            func_disp_sw();
+            
+            // and switch to the idle state
+            state = SW_STATE_IDLE;
+
+            break;
+        }
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     }
 }
 
@@ -421,17 +423,87 @@ static void __func_sleep (void)
 
 //..............................................................................
 
-char* __func_uint8_to_hex (uint8_t val)
-{
-    hex[0] = val / 16 + '0';
-    hex[1] = val % 16 + '0';
-    
-    if( hex[0] > '9' ) hex[0] += 7;
-    if( hex[1] > '9' ) hex[1] += 7;
-    
-    hex[2] = '\0';
+//static char* __func_uint8_to_hex (uint8_t val)
+//{
+//    hex[0] = val / 16 + '0';
+//    hex[1] = val % 16 + '0';
+//    
+//    if( hex[0] > '9' ) hex[0] += 7;
+//    if( hex[1] > '9' ) hex[1] += 7;
+//    
+//    hex[2] = '\0';
+//
+//    return hex;
+//}
 
-    return hex;
+//..............................................................................
+
+static void __func_auto_time_behaviour (void)
+{
+    switch(state)
+    {
+        case SW_STATE_IDLE:
+        {
+            // time to sleep?
+            if(state_cnt > IDL_TO_SLP_TIME)
+            {
+                __func_sleep();
+            }
+            break;
+        }
+        case SW_STATE_RUN:
+        {
+            break;
+        }
+        case SW_STATE_STOP:
+        {
+            // time to go from stop to idle?
+            if(state_cnt > STP_TO_IDL_TIME)
+            {
+                state_cnt = 0;
+
+                // clear the stop watch
+                __func_clear_sw(&sWatch);
+
+                // display the resetted time
+                func_disp_sw();
+
+                // and switch to the idle state
+                state = SW_STATE_IDLE;
+            }
+            break;
+        }
+        case SW_STATE_CLR:
+        {
+            // time to leave "Clear?" state
+            if(state_cnt > SW_STATE_CLR)
+            {
+                state_cnt = 0;
+
+                // display the resetted time
+                func_disp_sw();
+
+                // and switch to the idle state
+                state = SW_STATE_IDLE;
+            }
+            break;
+        }
+        case SW_STATE_CLRD:
+        {
+            // time to leave "Cleard!" state
+            if(state_cnt > SW_STATE_CLRD)
+            {
+                state_cnt = 0;
+
+                // display the resetted time
+                func_disp_sw();
+
+                // and switch to the idle state
+                state = SW_STATE_IDLE;
+            }
+            break;
+        }
+    }
 }
 
 //..............................................................................

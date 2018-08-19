@@ -28,6 +28,16 @@
 #include "spi.h"
 #include "main.h"
 
+//*** static functions *********************************************************
+
+/**
+ * Use this function to direct the DDRAM of the LC-Display to a desired address.
+ * 
+ * @param addr New address for the DDRAM.
+ */
+
+static void __lcd_goto (uint8_t addr);
+
 //*** functions ****************************************************************
 
 void lcd_init (void)
@@ -55,8 +65,6 @@ void lcd_init (void)
     LCD_CS = 1;
     
     __delay_ms(10);
-    
-    //lcd_return_home();
 }
 
 //..............................................................................
@@ -78,8 +86,11 @@ void lcd_return_home (void)
 
 //..............................................................................
 
-void lcd_write (char *pStr)
+void lcd_write (char *pStr, uint8_t addr)
 {
+    // set the start address first
+    __lcd_goto(addr);
+
     // set register selection: data
     LCD_RS = 1;
     LCD_CS = 0;
@@ -108,6 +119,24 @@ void lcd_off (void)
     LCD_CS = 0;
     spi_transfer(&buf, NULL, 1);
     LCD_CS = 1;
+}
+
+//*** static functions *********************************************************
+
+static void __lcd_goto (uint8_t addr)
+{
+    uint8_t buf[2];
+
+    buf[0] = 0b00110000;    // function set (instruction table 0)
+    buf[1] = 0x80 | addr;   // set DDRAM cmd + address
+    
+    // set register selection: command
+    LCD_RS = 0;
+    LCD_CS = 0;
+
+    spi_transfer(buf, NULL, 2);
+    
+    LCD_CS = 1;    
 }
 
 //..............................................................................

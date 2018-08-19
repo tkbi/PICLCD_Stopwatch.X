@@ -47,18 +47,19 @@
 
 // key press & hold time border values [10ms]
 #define KEY_HOLD_SAVE       300
-#define KEY_HOLD_CLR        1000
+#define KEY_HOLD_CLR        500
 
 // states for the stop watch' state machine
 #define SW_STATE_IDLE       0
 #define SW_STATE_RUN        1
 #define SW_STATE_STOP       2
+#define SW_STATE_CLR        3
+#define SW_STATE_CLRD       4
 
-// go sleeping after .. [10ms]
-#define IDL_TO_SLP_TIME     1000   
-
-// go from stop to idle after .. [10ms]
-#define STP_TO_IDL_TIME     1000
+// some time definitions (x*10ms)
+#define IDL_TO_SLP_TIME     1500    // go sleeping after.. in idle state
+#define STP_TO_IDL_TIME     1000    // swtich from stop to idle state after..
+#define CLRD_TO_IDL_TIME    3000    // switch from cleared to idle state after..
 
 //*** typedef ******************************************************************
 
