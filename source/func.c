@@ -162,9 +162,8 @@ void func_workload (void)
             {
                 debCntPB = 0;
                 keyMem &= ~KEY_PB;
+                state_cnt = 0;
             }
-            
-            state_cnt = 0;
         }
 
         if(keyMem & KEY_USR)
@@ -324,7 +323,7 @@ static bool __func_sw_state_machine (void)
             if(debCntPB > KEY_HOLD_CLR && PB)
             {
                 // display some status info
-                lcd_write("Clear?  ",0);
+                lcd_write("Erase?  ",0);
                 state = SW_STATE_CLR;      
                 
                 // key was accepted (can be cleared)
@@ -432,7 +431,7 @@ static bool __func_sw_state_machine (void)
                 // the complete stop watch memory
                 eeprom_25LC256_clear();   
 
-                lcd_write("Cleared!",0);
+                lcd_write("Erased  ",0);
 
                 // and go into the cleared state (just wait some time here to 
                 // display the message and go back to idle)
