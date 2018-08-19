@@ -52,7 +52,7 @@ dkms.conf
 
 # Some Netbeans (MPLABX) stuff
 nbproject/private/
-build/
+build/default/
 nbbuild/
 dist/
 nbdist/
