@@ -103,9 +103,11 @@ static void __func_clear_sw (sw_t *pSw);
 /**
  * This function handles the stop watch state machine and should always be
  * called if the PB was released.
+ * 
+ * @return True if the key event was accepted or false if not.
  */
 
-static void __func_sw_state_machine (void);
+static bool __func_sw_state_machine (void);
 
 /**
  * The PIC will go sleeping if you call this function. Normally this function
@@ -133,6 +135,8 @@ static void __func_auto_time_behaviour (void);
 
 void func_workload (void)
 {    
+    static uint8_t keyMem;
+    
     // check if another 10ms are passed
     if( status.iXms )
     {
@@ -148,33 +152,26 @@ void func_workload (void)
         }
         
         // check for an key released event
-        if( __func_debounce() == KEY_RELEASED )
-        {
-            // whenever the button was pressed reset the state counter
-            state_cnt = 0;
+        keyMem |= __func_debounce();
 
-            if(lastReleasedKey & KEY_PB)
+        // changes on PB?
+        if(keyMem & KEY_PB)
+        {
+            // reset the pressed & hold counter if key is accepted
+            if( __func_sw_state_machine() )
             {
-                __func_sw_state_machine();
-                
-                // confirm the released key
-                lastReleasedKey &= ~KEY_PB;
-                
-                // reset the pressed & hold counter
                 debCntPB = 0;
+                keyMem &= ~KEY_PB;
             }
             
-            if(lastReleasedKey & KEY_USR)
-            {
-                // confirm the released key
-                lastReleasedKey &= ~KEY_USR;
-                
-                // trigger an event here..
-                // nothing implemented yet for this key
-                
-                // reset the pressed & hold counter
-                debCntUSR = 0;
-            }
+            state_cnt = 0;
+        }
+
+        if(keyMem & KEY_USR)
+        {
+            // reset the pressed & hold counter
+            debCntUSR = 0;
+            keyMem &= ~KEY_USR;
         }
     }
     
@@ -255,7 +252,7 @@ static char* __func_time_to_str (sw_t *pSw)
 static uint8_t __func_debounce (void)
 {
     uint8_t actKeyDown = 0;
-    uint8_t ret = NO_KEY_EVENT;
+    uint8_t ret = 0;
 
     // check if PB is pressed right now
     if(PB)
@@ -280,15 +277,8 @@ static uint8_t __func_debounce (void)
     // is there a new key event (key pressed or released)?
     if(actKeyDown != lastPressedKey)
     {
-        // use KEY_PRESSED as default event
-        ret = KEY_PRESSED;
-
-        // was is a key released event?
-        if(actKeyDown < lastPressedKey)
-        {
-            lastReleasedKey = actKeyDown ^ lastPressedKey;
-            ret = KEY_RELEASED;
-        }
+        // check which keys changed
+        ret = actKeyDown ^ lastPressedKey;
         
         // take the new actKeyDown as lastPressedKey
         lastPressedKey = actKeyDown;
@@ -308,27 +298,50 @@ static void __func_clear_sw (sw_t *pSw)
 
 //..............................................................................
 
-static void __func_sw_state_machine (void)
+static bool __func_sw_state_machine (void)
 {
+    bool keyAccepted = false;
+            
     switch(state)
     {
+        case SW_STATE_PRE_IDLE:
+        {
+            state = SW_STATE_IDLE;
+            
+            // key was accepted (can be cleared)
+            keyAccepted = true;
+
+            #ifdef DEBUG
+                uart_print("state: PRE IDLE -> IDLE\n");
+            #endif
+
+            break;
+        }
+
         case SW_STATE_IDLE:
         {
             // check how long the key was pressed
-            if(debCntPB > KEY_HOLD_CLR)
+            if(debCntPB > KEY_HOLD_CLR && PB)
             {
                 // display some status info
                 lcd_write("Clear?  ",0);
                 state = SW_STATE_CLR;      
                 
+                // key was accepted (can be cleared)
+                keyAccepted = true;
+                
                 #ifdef DEBUG
                     uart_print("state: IDLE -> CLEAR\n");
                 #endif
             }
-            else
+            // is the key already released?
+            else if(!PB)
             {
                 // start a new measurement
                 state = SW_STATE_RUN;
+                
+                // key was accepted (can be cleared)
+                keyAccepted = true;
                 
                 #ifdef DEBUG
                     uart_print("state: IDLE -> RUN\n");
@@ -340,19 +353,39 @@ static void __func_sw_state_machine (void)
 
         case SW_STATE_RUN:
         {
+            if(PB)
+            {
+                state = SW_STATE_PRE_STOP;
+
+                // key was accepted (can be cleared)
+                keyAccepted = true;
+
+                #ifdef DEBUG
+                    uart_print("state: RUN -> STOP\n");
+                #endif
+            }
+
+            break;
+        }
+
+        case SW_STATE_PRE_STOP:
+        {
+            // key was accepted (can be cleared)
+            keyAccepted = true;
+               
             state = SW_STATE_STOP;
             
             #ifdef DEBUG
-                uart_print("state: RUN -> STOP\n");
+                uart_print("state: PRE STOP -> STOP\n");
             #endif
-            
+
             break;
         }
 
         case SW_STATE_STOP:
         {
             // check how long the key was pressed
-            if(debCntPB > KEY_HOLD_SAVE)
+            if(debCntPB > KEY_HOLD_SAVE && PB)
             {
                 // save the last sw-value into the EEPROM
                 // ...
@@ -366,16 +399,22 @@ static void __func_sw_state_machine (void)
                 // and switch to the saved state (just show the "Saved" message
                 // for some seconds)
                 state = SW_STATE_SAVED;
+                
+                // key was accepted (can be cleared)
+                keyAccepted = true;
                
                 #ifdef DEBUG
                     uart_print("state: STOP -> SAVED\n");
                 #endif
             }
-            else
+            else if(!PB)
             {
                 __func_clear_sw(&sWatch);
                 func_disp_sw();
                 state = SW_STATE_IDLE;
+                
+                // key was accepted (can be cleared)
+                keyAccepted = true;
                 
                 #ifdef DEBUG
                     uart_print("state: STOP -> IDLE\n");
@@ -387,57 +426,77 @@ static void __func_sw_state_machine (void)
 
         case SW_STATE_CLR:
         {
-            // if the program counter got here the user confirmed to "clear"
-            // the complete stop watch memory
-            eeprom_25LC256_clear();   
+            if(PB)
+            {
+                // if the program counter got here the user confirmed to "clear"
+                // the complete stop watch memory
+                eeprom_25LC256_clear();   
+
+                lcd_write("Cleared!",0);
+
+                // and go into the cleared state (just wait some time here to 
+                // display the message and go back to idle)
+                state = SW_STATE_CLRD;
+
+                // key was accepted (can be cleared)
+                keyAccepted = true;
+
+                #ifdef DEBUG
+                    uart_print("state: CLEAR -> CLEARED\n");
+                #endif
+            }
             
-            lcd_write("Cleared!",0);
-                    
-            // and go into the cleared state (just wait some time here to 
-            // display the message and go back to idle)
-            state = SW_STATE_CLRD;
-            
-            #ifdef DEBUG
-                uart_print("state: CLEAR -> CLEARED\n");
-            #endif
-                
             break;
         }
 
         case SW_STATE_CLRD:
         {
-            // if the program counter got here the user pushed the button again
-            // to faster switch from state cleared to idle
-            __func_clear_sw(&sWatch);
-            
-            // display again the 00:00:00
-            func_disp_sw();
-            
-            // and switch to the idle state
-            state = SW_STATE_IDLE;
-            
-            #ifdef DEBUG
-                uart_print("state: CLEARED -> IDLE\n");
-            #endif
-            
+            if(PB)
+            {
+                // if the program counter got here the user pushed the button again
+                // to faster switch from state cleared to idle
+                __func_clear_sw(&sWatch);
+
+                // display again the 00:00:00
+                func_disp_sw();
+
+                // and switch to the idle state
+                state = SW_STATE_PRE_IDLE;
+
+                // key was accepted (can be cleared)
+                keyAccepted = true;
+
+                #ifdef DEBUG
+                    uart_print("state: CLEARED -> IDLE\n");
+                #endif
+            }
+
             break;
         }
         
         case SW_STATE_SAVED:
-        {            
-            // display again the 00:00:00
-            func_disp_sw();
-            
-            // and switch to the idle state
-            state = SW_STATE_IDLE;
-            
-            #ifdef DEBUG
-                uart_print("state: SAVED -> IDLE\n");
-            #endif
-            
+        {      
+            if(PB)
+            {
+                // display again the 00:00:00
+                func_disp_sw();
+
+                // and switch to the idle state
+                state = SW_STATE_PRE_IDLE;
+
+                // key was accepted (can be cleared)
+                keyAccepted = true;
+
+                #ifdef DEBUG
+                    uart_print("state: SAVED -> IDLE\n");
+                #endif
+            }
+
             break;
         }
     }
+    
+    return keyAccepted;
 }
 
 //..............................................................................

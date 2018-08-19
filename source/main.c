@@ -91,6 +91,9 @@ static void __main_init_pic (void)
     INTCON2bits.RABPU = 0;
     WPUBbits.WPUB4 = 1;
     
+    // disable pull ups on PORTA
+    WPUA = 0;
+    
     // analog and digital selection
     ANSEL  = 0x00;
     ANSELH = 0x00;

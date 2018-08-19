@@ -50,12 +50,14 @@
 #define KEY_HOLD_CLR            500
 
 // states for the stop watch' state machine
-#define SW_STATE_IDLE           0
-#define SW_STATE_RUN            1
-#define SW_STATE_STOP           2
-#define SW_STATE_CLR            3   
-#define SW_STATE_CLRD           4
-#define SW_STATE_SAVED          5
+#define SW_STATE_PRE_IDLE       0
+#define SW_STATE_IDLE           1
+#define SW_STATE_RUN            2
+#define SW_STATE_PRE_STOP       3
+#define SW_STATE_STOP           4
+#define SW_STATE_CLR            5   
+#define SW_STATE_CLRD           6
+#define SW_STATE_SAVED          7
 
 // some time definitions (x*10ms) switch automatically from a to b after ..
 #define IDLE_TO_SLEEP_TIME      1500    // idle     -> sleep
