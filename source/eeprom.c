@@ -49,6 +49,12 @@ static uint16_t __eeprom_25LC256_get_addr_ptr (void);
 
 static void __eeprom_25LC256_set_addr_ptr (uint16_t addr_ptr);
 
+/**
+ * 
+ */
+
+static void __eeprom_25LC56_set_wel (void);
+
 //*** functions ****************************************************************
 
 void eeprom_25LC256_read (uint16_t addr, uint8_t *pBuf, uint8_t len)
@@ -87,7 +93,6 @@ void eeprom_25LC256_read (uint16_t addr, uint8_t *pBuf, uint8_t len)
 
 void eeprom_25LC256_write (uint16_t addr, uint8_t *pBuf, uint8_t len)
 {
-    uint8_t wren = EEPROM_25LC256_WREN;
     uint8_t buf [3];
     uint8_t *p = pBuf;
     uint8_t next_len;
@@ -105,9 +110,10 @@ void eeprom_25LC256_write (uint16_t addr, uint8_t *pBuf, uint8_t len)
         if(next_len > len) next_len = len;
         
         // enable the write latch by sending WREN
-        EEPROM_CS = 0;
-        spi_transfer(&wren, NULL, 1);
-        EEPROM_CS = 1; 
+        __eeprom_25LC56_set_wel();
+
+        // check if WEL bit is really set
+        while( !(eeprom_25LC56_read_status_reg() & EEPROM_25LC256_SR_WEL) );
         
         // copy the (next) address to the buffer
         buf[1] = (uint8_t)((addr >> 8) & 0xFF);
@@ -124,6 +130,9 @@ void eeprom_25LC256_write (uint16_t addr, uint8_t *pBuf, uint8_t len)
         // update the remaining length and the address
         len -= next_len;
         addr += next_len;
+        
+        // wait until WIP bit is cleared
+        while( eeprom_25LC56_read_status_reg() & EEPROM_25LC256_SR_WIP );
     }
 }
 
@@ -150,17 +159,6 @@ void eeprom_25LC256_clear (void)
     __eeprom_25LC256_set_addr_ptr(0x0002);
 }
 
-//..............................................................................
-
-void eeprom_25LC56_wren (void)
-{
-    uint8_t buf = EEPROM_25LC256_WREN;
-    
-    EEPROM_CS = 0;
-    spi_transfer(&buf, NULL, 1);
-    EEPROM_CS = 1;
-}
-
 //*** static functions *********************************************************
 
 static uint16_t __eeprom_25LC256_get_addr_ptr (void)
@@ -177,6 +175,17 @@ static uint16_t __eeprom_25LC256_get_addr_ptr (void)
 static void __eeprom_25LC256_set_addr_ptr (uint16_t addr_ptr)
 {
     eeprom_25LC256_write(0x0000, (uint8_t*)(&addr_ptr), 2);
+}
+
+//..............................................................................
+
+static void __eeprom_25LC56_set_wel (void)
+{
+    uint8_t buf = EEPROM_25LC256_WREN;
+    
+    EEPROM_CS = 0;
+    spi_transfer(&buf, NULL, 1);
+    EEPROM_CS = 1;
 }
 
 //..............................................................................

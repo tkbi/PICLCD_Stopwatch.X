@@ -34,7 +34,6 @@
 #define EEPROM_CS               LATCbits.LATC2
 
 // 25LC256 instruction set
-
 #define EEPROM_25LC256_READ     0b00000011  // Read data from memory array 
                                             // beginning at selected address
 #define EEPROM_25LC256_WRITE    0b00000010  // Write data to memory array 
@@ -45,6 +44,13 @@
                                             // (enable write operations)
 #define EEPROM_25LC256_RDSR     0b00000101  // Read STATUS register
 #define EEPROM_25LC256_WRSR     0b00000001  // Write STATUS register
+
+// status register bitfield
+#define EEPROM_25LC256_SR_WIP   0x01        // write in progress
+#define EEPROM_25LC256_SR_WEL   0x02        // write enable latch
+#define EEPROM_25LC256_SR_BP0   0x04        // block protection
+#define EEPROM_25LC256_SR_BP1   0x08        // block protection
+#define EEPROM_25LC256_SR_WPEN  0x80        // write protect enable
 
 //*** prototypes ***************************************************************
 
@@ -75,8 +81,11 @@ void eeprom_25LC256_write (uint16_t addr, uint8_t *pBuf, uint8_t len);
 
 void eeprom_25LC256_clear (void);
 
-uint8_t eeprom_25LC56_read_status_reg (void);
+/**
+ * 
+ * @return 
+ */
 
-void eeprom_25LC56_wren (void);
+uint8_t eeprom_25LC56_read_status_reg (void);
 
 #endif

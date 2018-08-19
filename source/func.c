@@ -325,6 +325,7 @@ static void __func_clear_sw (sw_t *pSw)
 static void __func_sw_state_machine (void)
 {
     uint8_t buf[32];
+    buf[0] = 0xA5;
 
     switch(state)
     {
@@ -341,9 +342,12 @@ static void __func_sw_state_machine (void)
                 state = SW_STATE_RUN;
                 uart_write_buf("-> run\n");
                 
+                
                 eeprom_25LC56_read_status_reg();
-                eeprom_25LC56_wren();
-                eeprom_25LC56_read_status_reg();
+                __delay_us(20);
+                eeprom_25LC256_write(0x55,buf,1);
+                __delay_us(20);
+                eeprom_25LC256_read(0x55,buf,1);
                 
 //                eeprom_25LC256_write(0, buf, 32);       // remove this two test lines..
 //                eeprom_25LC256_read(0, buf, 32);
