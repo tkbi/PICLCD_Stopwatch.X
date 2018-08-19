@@ -57,7 +57,7 @@ void uart_init(void);
  * @param pBuf Pointer to the message (string / char array with trailin zero).
  */
 
-void uart_write_buf (char *pBuf);
+void uart_print (char *pBuf);
 
 /**
  * Don't call this function by your own. It will be called within the
@@ -66,5 +66,5 @@ void uart_write_buf (char *pBuf);
  */
 
 void uart_tx (void);
- 
+
 #endif

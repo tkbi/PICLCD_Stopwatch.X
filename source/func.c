@@ -170,6 +170,7 @@ void func_workload (void)
                 lastReleasedKey &= ~KEY_USR;
                 
                 // trigger an event here..
+                // nothing implemented yet for this key
                 
                 // reset the pressed & hold counter
                 debCntUSR = 0;
@@ -177,10 +178,10 @@ void func_workload (void)
         }
     }
     
-    // call the uart transfer function if data available in the tx buffer
+    // call the uart tx-function if data is waiting out buffer
     if( status.iTx )
     {
-        // the iTX flag will be cleared inside uart_tx if buffer is empty
+        // the iTX flag will be cleared inside uart_tx (if buffer is empty)
         uart_tx();
     }
     
@@ -201,6 +202,9 @@ void func_disp_sw (void)
 
 static void __func_update_stopwatch (void)
 {
+    // to do: only update the changed chars instead of every time re-writing
+    // the hole display
+    
     // increment millisecond (+1 => +10ms)
     sWatch.ms += 1;
     
@@ -308,66 +312,98 @@ static void __func_sw_state_machine (void)
 {
     switch(state)
     {
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         case SW_STATE_IDLE:
         {
             // check how long the key was pressed
             if(debCntPB > KEY_HOLD_CLR)
             {
                 // display some status info
-                lcd_write("Clear?",0);
-                state = SW_STATE_CLR;
+                lcd_write("Clear?  ",0);
+                state = SW_STATE_CLR;      
+                
+                #ifdef DEBUG
+                    uart_print("state: IDLE -> CLEAR\n");
+                #endif
             }
             else
             {
                 // start a new measurement
                 state = SW_STATE_RUN;
+                
+                #ifdef DEBUG
+                    uart_print("state: IDLE -> RUN\n");
+                #endif
             }
 
             break;
         }
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
         case SW_STATE_RUN:
         {
             state = SW_STATE_STOP;
+            
+            #ifdef DEBUG
+                uart_print("state: RUN -> STOP\n");
+            #endif
+            
             break;
         }
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
         case SW_STATE_STOP:
         {
             // check how long the key was pressed
             if(debCntPB > KEY_HOLD_SAVE)
             {
-                // save the last sw-value
-                // to do
+                // save the last sw-value into the EEPROM
+                // ...
+                
+                // clear the last measurement
+                __func_clear_sw(&sWatch);
+                
+                // display an info message
+                lcd_write("Saved   ",0);
+                
+                // and switch to the saved state (just show the "Saved" message
+                // for some seconds)
+                state = SW_STATE_SAVED;
+               
+                #ifdef DEBUG
+                    uart_print("state: STOP -> SAVED\n");
+                #endif
             }
             else
             {
                 __func_clear_sw(&sWatch);
                 func_disp_sw();
                 state = SW_STATE_IDLE;
+                
+                #ifdef DEBUG
+                    uart_print("state: STOP -> IDLE\n");
+                #endif
             }
 
             break;
         }
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
         case SW_STATE_CLR:
         {
             // if the program counter got here the user confirmed to "clear"
             // the complete stop watch memory
-            eeprom_25LC256_clear();
+            eeprom_25LC256_clear();   
             
-            // display an user information that the memory was "cleared"
-            // change "Clear?" to "Cleared!"
-            lcd_write("ed!",5);
+            lcd_write("Cleared!",0);
                     
             // and go into the cleared state (just wait some time here to 
             // display the message and go back to idle)
             state = SW_STATE_CLRD;
-
+            
+            #ifdef DEBUG
+                uart_print("state: CLEAR -> CLEARED\n");
+            #endif
+                
             break;
         }
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
         case SW_STATE_CLRD:
         {
             // if the program counter got here the user pushed the button again
@@ -379,10 +415,28 @@ static void __func_sw_state_machine (void)
             
             // and switch to the idle state
             state = SW_STATE_IDLE;
-
+            
+            #ifdef DEBUG
+                uart_print("state: CLEARED -> IDLE\n");
+            #endif
+            
             break;
         }
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        case SW_STATE_SAVED:
+        {            
+            // display again the 00:00:00
+            func_disp_sw();
+            
+            // and switch to the idle state
+            state = SW_STATE_IDLE;
+            
+            #ifdef DEBUG
+                uart_print("state: SAVED -> IDLE\n");
+            #endif
+            
+            break;
+        }
     }
 }
 
@@ -394,8 +448,8 @@ static void __func_sleep (void)
     timer2_stop();
     lcd_off();  
     
-    // reset the idle counter
-    idl_cnt = 0;
+    // reset the state counter
+    state_cnt = 0;
    
     // enable INT2 to wake up the pic  
     INTCON3bits.INT2IE = 1;
@@ -445,20 +499,23 @@ static void __func_auto_time_behaviour (void)
         case SW_STATE_IDLE:
         {
             // time to sleep?
-            if(state_cnt > IDL_TO_SLP_TIME)
+            if(state_cnt > IDLE_TO_SLEEP_TIME)
             {
                 __func_sleep();
             }
+            
             break;
         }
+
         case SW_STATE_RUN:
         {
             break;
         }
+
         case SW_STATE_STOP:
         {
             // time to go from stop to idle?
-            if(state_cnt > STP_TO_IDL_TIME)
+            if(state_cnt > STOP_TO_IDLE_TIME)
             {
                 state_cnt = 0;
 
@@ -470,14 +527,20 @@ static void __func_auto_time_behaviour (void)
 
                 // and switch to the idle state
                 state = SW_STATE_IDLE;
+                
+                #ifdef DEBUG
+                    uart_print("new state (auto): STOP -> IDLE\n");
+                #endif
             }
+            
             break;
         }
+
         case SW_STATE_CLR:
         {
-            // time to leave "Clear?" state
-            if(state_cnt > SW_STATE_CLR)
-            {
+            // time to leave "Clear?" state (because of no user confirmation)
+            if(state_cnt > CLEAR_TO_IDLE_TIME)
+            {                
                 state_cnt = 0;
 
                 // display the resetted time
@@ -485,13 +548,19 @@ static void __func_auto_time_behaviour (void)
 
                 // and switch to the idle state
                 state = SW_STATE_IDLE;
+                
+                #ifdef DEBUG
+                    uart_print("state (auto): CLEAR -> IDLE\n");
+                #endif
             }
+
             break;
         }
+
         case SW_STATE_CLRD:
         {
             // time to leave "Cleard!" state
-            if(state_cnt > SW_STATE_CLRD)
+            if(state_cnt > CLEARED_TO_IDLE_TIME)
             {
                 state_cnt = 0;
 
@@ -500,7 +569,32 @@ static void __func_auto_time_behaviour (void)
 
                 // and switch to the idle state
                 state = SW_STATE_IDLE;
+                
+                #ifdef DEBUG
+                    uart_print("state (auto): CLEARED -> IDLE\n");
+                #endif
             }
+            
+            break;
+        }
+        
+        case SW_STATE_SAVED:
+        {
+            if(state_cnt > SAVED_TO_IDLE_TIME)
+            {
+                state_cnt = 0;
+
+                // display the resetted time
+                func_disp_sw();
+
+                // and switch to the idle state
+                state = SW_STATE_IDLE;
+                
+                #ifdef DEBUG
+                    uart_print("state (auto): SAVED -> IDLE\n");
+                #endif
+            }
+            
             break;
         }
     }

@@ -32,6 +32,9 @@
 
 #define _XTAL_FREQ  16000000
 
+// Uncomment the following line to get some debug messages via UART
+// #define DEBUG       0
+
 //*** typedef ******************************************************************
 
 // The status struct contains several flags that are important for the work of

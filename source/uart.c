@@ -62,7 +62,7 @@ void uart_init (void)
 
 //..............................................................................
 
-void uart_write_buf (char *pBuf)
+void uart_print (char *pBuf)
 {
     if( *pBuf )
     {

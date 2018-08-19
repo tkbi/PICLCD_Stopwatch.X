@@ -37,29 +37,32 @@
 #define PB  PORTAbits.RA4
 
 // key events
-#define NO_KEY_EVENT        0
-#define KEY_PRESSED         1
-#define KEY_RELEASED        2
+#define NO_KEY_EVENT            0
+#define KEY_PRESSED             1
+#define KEY_RELEASED            2
 
 // key bitfield
-#define KEY_PB              1
-#define KEY_USR             2
+#define KEY_PB                  1
+#define KEY_USR                 2
 
 // key press & hold time border values [10ms]
-#define KEY_HOLD_SAVE       300
-#define KEY_HOLD_CLR        500
+#define KEY_HOLD_SAVE           300
+#define KEY_HOLD_CLR            500
 
 // states for the stop watch' state machine
-#define SW_STATE_IDLE       0
-#define SW_STATE_RUN        1
-#define SW_STATE_STOP       2
-#define SW_STATE_CLR        3
-#define SW_STATE_CLRD       4
+#define SW_STATE_IDLE           0
+#define SW_STATE_RUN            1
+#define SW_STATE_STOP           2
+#define SW_STATE_CLR            3   
+#define SW_STATE_CLRD           4
+#define SW_STATE_SAVED          5
 
-// some time definitions (x*10ms)
-#define IDL_TO_SLP_TIME     1500    // go sleeping after.. in idle state
-#define STP_TO_IDL_TIME     1000    // swtich from stop to idle state after..
-#define CLRD_TO_IDL_TIME    3000    // switch from cleared to idle state after..
+// some time definitions (x*10ms) switch automatically from a to b after ..
+#define IDLE_TO_SLEEP_TIME      1500    // idle     -> sleep
+#define STOP_TO_IDLE_TIME       1000    // stop     -> idle
+#define CLEAR_TO_IDLE_TIME      800     // clear    -> idle
+#define CLEARED_TO_IDLE_TIME    300     // cleared  -> idle
+#define SAVED_TO_IDLE_TIME      300     // saved    -> idle
 
 //*** typedef ******************************************************************
 
