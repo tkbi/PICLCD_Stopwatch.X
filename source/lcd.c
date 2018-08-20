@@ -69,20 +69,20 @@ void lcd_init (void)
 
 //..............................................................................
 
-void lcd_return_home (void)
-{
-    uint8_t buf [2];
- 
-    // set register selection: command
-    LCD_RS = 0;
-    
-    buf[0] = 0b00110000;    // function set (instruction table 0)
-    buf[1] = 0b00000010;    // go home
-    
-    LCD_CS = 0;
-    spi_transfer(buf, NULL, 2);
-    LCD_CS = 1;
-}
+//void lcd_return_home (void)
+//{
+//    uint8_t buf [2];
+// 
+//    // set register selection: command
+//    LCD_RS = 0;
+//    
+//    buf[0] = 0b00110000;    // function set (instruction table 0)
+//    buf[1] = 0b00000010;    // go home
+//    
+//    LCD_CS = 0;
+//    spi_transfer(buf, NULL, 2);
+//    LCD_CS = 1;
+//}
 
 //..............................................................................
 

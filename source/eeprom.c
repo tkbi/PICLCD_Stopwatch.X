@@ -30,27 +30,8 @@
 //*** prototypes ***************************************************************
 
 /**
- * This function will read the address pointer to the first free address inside
- * the external EEPROM. This address (not a pointer) can be used to store the
- * next data into the external EEPROM.
- * 
- * @return The 16 bit address to the next free slot inside the ext. EEPROM
- */
-
-static uint16_t __eeprom_25LC256_get_addr_ptr (void);
-
-/**
- * You can update the address value that informs about the next free address
- * slot inside the external EEPROM. This function will be called if new data
- * was written into the external EEPROM.
- * 
- * @param addr_ptr New address to the next free slot inside the ext. EEPROM
- */
-
-static void __eeprom_25LC256_set_addr_ptr (uint16_t addr_ptr);
-
-/**
- * 
+ * This function will set the write enable latch of the external EEPROM in order
+ * to disable the write protection. Afterwards data can be written.
  */
 
 static void __eeprom_25LC56_set_wel (void);
@@ -156,12 +137,12 @@ uint8_t eeprom_25LC56_read_status_reg (void)
 
 void eeprom_25LC256_clear (void)
 {
-    __eeprom_25LC256_set_addr_ptr(0x0002);
+    eeprom_25LC256_set_addr_ptr(0x0002);
 }
 
-//*** static functions *********************************************************
+//..............................................................................
 
-static uint16_t __eeprom_25LC256_get_addr_ptr (void)
+uint16_t eeprom_25LC256_get_addr_ptr (void)
 {
     uint16_t addr_ptr;
     
@@ -172,12 +153,12 @@ static uint16_t __eeprom_25LC256_get_addr_ptr (void)
 
 //..............................................................................
 
-static void __eeprom_25LC256_set_addr_ptr (uint16_t addr_ptr)
+void eeprom_25LC256_set_addr_ptr (uint16_t addr_ptr)
 {
     eeprom_25LC256_write(0x0000, (uint8_t*)(&addr_ptr), 2);
 }
 
-//..............................................................................
+//*** static functions *********************************************************
 
 static void __eeprom_25LC56_set_wel (void)
 {

@@ -23,6 +23,7 @@
  ******************************************************************************/
 
 #include <xc.h>
+#include <stdio.h>
 
 #include "main.h"
 #include "func.h"
@@ -34,7 +35,6 @@
 //*** global variables *********************************************************
 
 uint8_t uartBuf;
-char hex[3];
 
 //*** static variables *********************************************************
 
@@ -54,6 +54,9 @@ static uint16_t debCntPB = 0;
 
 // state counter
 static uint16_t state_cnt = 0;
+
+// this buffer is used for converting numbers to its string representation
+static char tmp_buf[8];
 
 //*** prototypes ***************************************************************
 
@@ -117,19 +120,43 @@ static bool __func_sw_state_machine (void);
 
 static void __func_sleep (void);
 
-///**
-// * 
-// * @param val
-// * @return 
-// */
-//
+/**
+ * This function will convert a byte into its hexadecimal representation.
+ * 
+ * @param val Byte value to be convert
+ * @return Pointer to the null terminated hex string of val
+ */
+
 //static char* __func_uint8_to_hex (uint8_t val);
 
 /**
+ * This function will convert a 16-bit value into its decimal representation.
  * 
+ * @param val uint16_t value to be convert
+ * @return Pointer to the null terminated decimal string of val
+ */
+
+static char* __func_uint16_to_dec (uint16_t val);
+
+/**
+ * This function manages the automatical time behaviour of the stop watch. One
+ * example is the automatically switch to sleep state after the stop watch was
+ * idle for some time. The function must be called every 10ms (system tick)
+ * within the function func_workload().
  */
 
 static void __func_auto_time_behaviour (void);
+
+/**
+ * You can use this function to the latest stop watch measurement (which is not
+ * yet erased due to automatically switching to the idle state) into the
+ * external EEPROM.
+ * 
+ * @param pSw Stop watch measurement to save into the external EEPROM.
+ * @return Address/Slot where the measurement was saved.
+ */
+
+static uint16_t __func_save (sw_t *pSw);
 
 //*** functions ****************************************************************
 
@@ -300,6 +327,7 @@ static void __func_clear_sw (sw_t *pSw)
 static bool __func_sw_state_machine (void)
 {
     bool keyAccepted = true;
+    uint16_t addr;
             
     switch(state)
     {
@@ -321,6 +349,7 @@ static bool __func_sw_state_machine (void)
             {
                 // display some status info
                 lcd_write("Erase?  ",0);
+
                 state = SW_STATE_CLR;      
                 
                 #ifdef DEBUG
@@ -377,16 +406,12 @@ static bool __func_sw_state_machine (void)
             if(debCntPB > KEY_HOLD_SAVE && PB)
             {
                 // save the last sw-value into the EEPROM
-                // ...
+                addr = __func_save(&sWatch);
+
+                // display an info message (-> #xxxx)
+                lcd_write(__func_uint16_to_dec((addr-2)>>2), 3);
+                lcd_write("-> #",0);
                 
-                // clear the last measurement
-                __func_clear_sw(&sWatch);
-                
-                // display an info message
-                lcd_write("Saved   ",0);
-                
-                // and switch to the saved state (just show the "Saved" message
-                // for some seconds)
                 state = SW_STATE_SAVED;
                
                 #ifdef DEBUG
@@ -397,6 +422,7 @@ static bool __func_sw_state_machine (void)
             {
                 __func_clear_sw(&sWatch);
                 func_disp_sw();
+
                 state = SW_STATE_IDLE;
                 
                 #ifdef DEBUG
@@ -416,14 +442,9 @@ static bool __func_sw_state_machine (void)
         {
             if(PB)
             {
-                // if the program counter got here the user confirmed to "clear"
-                // the complete stop watch memory
                 eeprom_25LC256_clear();   
-
                 lcd_write("Erased  ",0);
 
-                // and go into the cleared state (just wait some time here to 
-                // display the message and go back to idle)
                 state = SW_STATE_CLRD;
 
                 #ifdef DEBUG
@@ -438,14 +459,10 @@ static bool __func_sw_state_machine (void)
         {
             if(PB)
             {
-                // if the program counter got here the user pushed the button again
-                // to faster switch from state cleared to idle
-                __func_clear_sw(&sWatch);
-
                 // display again the 00:00:00
+                __func_clear_sw(&sWatch);
                 func_disp_sw();
 
-                // and switch to the idle state
                 state = SW_STATE_PRE_IDLE;
 
                 #ifdef DEBUG
@@ -461,9 +478,9 @@ static bool __func_sw_state_machine (void)
             if(PB)
             {
                 // display again the 00:00:00
+                __func_clear_sw(&sWatch);
                 func_disp_sw();
 
-                // and switch to the idle state
                 state = SW_STATE_PRE_IDLE;
 
                 #ifdef DEBUG
@@ -517,16 +534,35 @@ static void __func_sleep (void)
 
 //static char* __func_uint8_to_hex (uint8_t val)
 //{
-//    hex[0] = val / 16 + '0';
-//    hex[1] = val % 16 + '0';
+//    tmp_buf[0] = val / 16 + '0';
+//    tmp_buf[1] = val % 16 + '0';
 //    
-//    if( hex[0] > '9' ) hex[0] += 7;
-//    if( hex[1] > '9' ) hex[1] += 7;
+//    if( tmp_buf[0] > '9' ) tmp_buf[0] += 7;
+//    if( tmp_buf[1] > '9' ) tmp_buf[1] += 7;
 //    
-//    hex[2] = '\0';
+//    tmp_buf[2] = '\0';
 //
-//    return hex;
+//    return tmp_buf;
 //}
+
+//..............................................................................
+
+static char* __func_uint16_to_dec (uint16_t val)
+{
+    tmp_buf[0] = val/10000 + '0';
+    val %= 10000;
+    tmp_buf[1] = val/ 1000 + '0';
+    val %=  1000;
+    tmp_buf[2] = val/  100 + '0';
+    val %=   100;
+    tmp_buf[3] = val/   10 + '0';
+    val %=    10;
+    tmp_buf[4] = val       + '0';
+    
+    tmp_buf[5] = '\0';
+
+    return tmp_buf;
+}
 
 //..............................................................................
 
@@ -559,11 +595,8 @@ static void __func_auto_time_behaviour (void)
 
                 // clear the stop watch
                 __func_clear_sw(&sWatch);
-
-                // display the resetted time
                 func_disp_sw();
 
-                // and switch to the idle state
                 state = SW_STATE_IDLE;
                 
                 #ifdef DEBUG
@@ -582,9 +615,9 @@ static void __func_auto_time_behaviour (void)
                 state_cnt = 0;
 
                 // display the resetted time
+                __func_clear_sw(&sWatch);
                 func_disp_sw();
 
-                // and switch to the idle state
                 state = SW_STATE_IDLE;
                 
                 #ifdef DEBUG
@@ -603,9 +636,9 @@ static void __func_auto_time_behaviour (void)
                 state_cnt = 0;
 
                 // display the resetted time
+                __func_clear_sw(&sWatch);
                 func_disp_sw();
 
-                // and switch to the idle state
                 state = SW_STATE_IDLE;
                 
                 #ifdef DEBUG
@@ -623,9 +656,9 @@ static void __func_auto_time_behaviour (void)
                 state_cnt = 0;
 
                 // display the resetted time
+                __func_clear_sw(&sWatch);
                 func_disp_sw();
 
-                // and switch to the idle state
                 state = SW_STATE_IDLE;
                 
                 #ifdef DEBUG
@@ -636,6 +669,24 @@ static void __func_auto_time_behaviour (void)
             break;
         }
     }
+}
+
+//..............................................................................
+
+static uint16_t __func_save (sw_t *pSw)
+{
+    uint16_t addr = eeprom_25LC256_get_addr_ptr();
+    
+    // store the latest stop watch measurement
+    eeprom_25LC256_write(addr, (uint8_t*)pSw, sizeof(sw_t));
+    
+    // update the address of the next free slot
+    addr += sizeof(sw_t);
+    
+    // update the address pointer (next free slot)
+    eeprom_25LC256_set_addr_ptr(addr);
+    
+    return addr;
 }
 
 //..............................................................................

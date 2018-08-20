@@ -45,7 +45,7 @@ void lcd_init (void);
 /**
  * Return to the origin start address of the display.
  */
-void lcd_return_home (void);
+//void lcd_return_home (void);
 
 /**
  * You can write a string to the lcd by using this function.

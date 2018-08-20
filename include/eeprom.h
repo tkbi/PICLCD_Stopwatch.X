@@ -88,4 +88,24 @@ void eeprom_25LC256_clear (void);
 
 uint8_t eeprom_25LC56_read_status_reg (void);
 
+/**
+ * This function will read the address pointer to the first free address inside
+ * the external EEPROM. This address (not a pointer) can be used to store the
+ * next data into the external EEPROM.
+ * 
+ * @return The 16 bit address to the next free slot inside the ext. EEPROM
+ */
+
+uint16_t eeprom_25LC256_get_addr_ptr (void);
+
+/**
+ * You can update the address value that informs about the next free address
+ * slot inside the external EEPROM. This function will be called if new data
+ * was written into the external EEPROM.
+ * 
+ * @param addr_ptr New address to the next free slot inside the ext. EEPROM
+ */
+
+void eeprom_25LC256_set_addr_ptr (uint16_t addr_ptr);
+
 #endif
