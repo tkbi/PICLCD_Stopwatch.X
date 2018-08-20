@@ -299,16 +299,13 @@ static void __func_clear_sw (sw_t *pSw)
 
 static bool __func_sw_state_machine (void)
 {
-    bool keyAccepted = false;
+    bool keyAccepted = true;
             
     switch(state)
     {
         case SW_STATE_PRE_IDLE:
         {
             state = SW_STATE_IDLE;
-            
-            // key was accepted (can be cleared)
-            keyAccepted = true;
 
             #ifdef DEBUG
                 uart_print("state: PRE IDLE -> IDLE\n");
@@ -326,9 +323,6 @@ static bool __func_sw_state_machine (void)
                 lcd_write("Erase?  ",0);
                 state = SW_STATE_CLR;      
                 
-                // key was accepted (can be cleared)
-                keyAccepted = true;
-                
                 #ifdef DEBUG
                     uart_print("state: IDLE -> CLEAR\n");
                 #endif
@@ -339,12 +333,14 @@ static bool __func_sw_state_machine (void)
                 // start a new measurement
                 state = SW_STATE_RUN;
                 
-                // key was accepted (can be cleared)
-                keyAccepted = true;
-                
                 #ifdef DEBUG
                     uart_print("state: IDLE -> RUN\n");
                 #endif
+            }
+            else
+            {
+                // key was NOT accepted
+                keyAccepted = false;
             }
 
             break;
@@ -356,9 +352,6 @@ static bool __func_sw_state_machine (void)
             {
                 state = SW_STATE_PRE_STOP;
 
-                // key was accepted (can be cleared)
-                keyAccepted = true;
-
                 #ifdef DEBUG
                     uart_print("state: RUN -> STOP\n");
                 #endif
@@ -368,10 +361,7 @@ static bool __func_sw_state_machine (void)
         }
 
         case SW_STATE_PRE_STOP:
-        {
-            // key was accepted (can be cleared)
-            keyAccepted = true;
-               
+        {   
             state = SW_STATE_STOP;
             
             #ifdef DEBUG
@@ -398,9 +388,6 @@ static bool __func_sw_state_machine (void)
                 // and switch to the saved state (just show the "Saved" message
                 // for some seconds)
                 state = SW_STATE_SAVED;
-                
-                // key was accepted (can be cleared)
-                keyAccepted = true;
                
                 #ifdef DEBUG
                     uart_print("state: STOP -> SAVED\n");
@@ -412,12 +399,14 @@ static bool __func_sw_state_machine (void)
                 func_disp_sw();
                 state = SW_STATE_IDLE;
                 
-                // key was accepted (can be cleared)
-                keyAccepted = true;
-                
                 #ifdef DEBUG
                     uart_print("state: STOP -> IDLE\n");
                 #endif
+            }
+            else
+            {
+                // key was NOT accepted
+                keyAccepted = false;
             }
 
             break;
@@ -436,9 +425,6 @@ static bool __func_sw_state_machine (void)
                 // and go into the cleared state (just wait some time here to 
                 // display the message and go back to idle)
                 state = SW_STATE_CLRD;
-
-                // key was accepted (can be cleared)
-                keyAccepted = true;
 
                 #ifdef DEBUG
                     uart_print("state: CLEAR -> CLEARED\n");
@@ -462,9 +448,6 @@ static bool __func_sw_state_machine (void)
                 // and switch to the idle state
                 state = SW_STATE_PRE_IDLE;
 
-                // key was accepted (can be cleared)
-                keyAccepted = true;
-
                 #ifdef DEBUG
                     uart_print("state: CLEARED -> IDLE\n");
                 #endif
@@ -482,9 +465,6 @@ static bool __func_sw_state_machine (void)
 
                 // and switch to the idle state
                 state = SW_STATE_PRE_IDLE;
-
-                // key was accepted (can be cleared)
-                keyAccepted = true;
 
                 #ifdef DEBUG
                     uart_print("state: SAVED -> IDLE\n");
