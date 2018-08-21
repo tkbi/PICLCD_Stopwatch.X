@@ -158,6 +158,55 @@ static void __func_auto_time_behaviour (void);
 
 static uint16_t __func_save (sw_t *pSw);
 
+/**
+ * This function will check if a new measurement is a new record. If the new 
+ * measurement is below the current record measurement (pRec) the function will
+ * return true. Otherwise false (no new record).
+ * 
+ * @param pSw Pointer to the latest measurement. 
+ * @return True if the last measurement is a new record otherwise false.
+ */
+
+static bool __func_is_new_record (sw_t *pSw);
+
+/**
+ * This function will read the current record.
+ * 
+ * @param pRec Pointer to provided memory to store the record measurement at.
+ * @return 0 if the record was read successfully or 1 if there is no record.
+ */
+
+static uint8_t __func_get_record (sw_t *pRec);
+
+/**
+ * This function will read the address pointer to the first free address inside
+ * the external EEPROM. This address (not a pointer) can be used to store the
+ * next data into the external EEPROM.
+ * 
+ * @return The 16 bit address to the next free slot inside the ext. EEPROM
+ */
+
+static uint16_t __func_get_addr_ptr (void);
+
+/**
+ * You can update the address value that informs about the next free address
+ * slot inside the external EEPROM. This function will be called if new data
+ * was written into the external EEPROM.
+ * 
+ * @param addr_ptr New address to the next free slot inside the ext. EEPROM
+ */
+
+static void __func_set_addr_ptr (uint16_t addr_ptr);
+
+/**
+ * Call this function to clear all saved stop watch measurements. The function
+ * wont override all memory of the external EEPROM with e.g. zeros. No.. it will
+ * only set the internal address-pointer back to 0x0004. The data inside the
+ * external EEPROM remains unchanged.
+ */
+
+static void __func_clear_eeprom (void);
+
 //*** functions ****************************************************************
 
 void func_workload (void)
@@ -380,10 +429,22 @@ static bool __func_sw_state_machine (void)
             if(PB)
             {
                 state = SW_STATE_PRE_STOP;
+                
+                // check if the measurement is a new record
+                if( __func_is_new_record(&sWatch) )
+                {
+                    state = SW_STATE_RECORD;
 
-                #ifdef DEBUG
-                    uart_print("state: RUN -> STOP\n");
-                #endif
+                    #ifdef DEBUG
+                        uart_print("state: RUN -> RECORD\n");
+                    #endif
+                }
+                else
+                {
+                    #ifdef DEBUG
+                        uart_print("state: RUN -> STOP\n");
+                    #endif
+                }
             }
 
             break;
@@ -442,7 +503,7 @@ static bool __func_sw_state_machine (void)
         {
             if(PB)
             {
-                eeprom_25LC256_clear();   
+                __func_clear_eeprom();   
                 lcd_write("Erased  ",0);
 
                 state = SW_STATE_CLRD;
@@ -476,6 +537,28 @@ static bool __func_sw_state_machine (void)
         case SW_STATE_SAVED:
         {      
             if(PB)
+            {
+                // display again the 00:00:00
+                __func_clear_sw(&sWatch);
+                func_disp_sw();
+
+                state = SW_STATE_PRE_IDLE;
+
+                #ifdef DEBUG
+                    uart_print("state: SAVED -> IDLE\n");
+                #endif
+            }
+
+            break;
+        }
+        
+        case SW_STATE_RECORD:
+        {      
+            if(!PB)
+            {
+                lcd_write("Record! ",0);
+            }
+            else
             {
                 // display again the 00:00:00
                 __func_clear_sw(&sWatch);
@@ -668,6 +751,26 @@ static void __func_auto_time_behaviour (void)
             
             break;
         }
+        
+        case SW_STATE_RECORD:
+        {
+            if(state_cnt > RECORD_TO_IDLE_TIME)
+            {
+                state_cnt = 0;
+
+                // display the resetted time
+                __func_clear_sw(&sWatch);
+                func_disp_sw();
+
+                state = SW_STATE_IDLE;
+                
+                #ifdef DEBUG
+                    uart_print("state (auto): RECORD -> IDLE\n");
+                #endif
+            }
+            
+            break;
+        }
     }
 }
 
@@ -675,18 +778,132 @@ static void __func_auto_time_behaviour (void)
 
 static uint16_t __func_save (sw_t *pSw)
 {
-    uint16_t addr = eeprom_25LC256_get_addr_ptr();
+    uint16_t addr = __func_get_addr_ptr();
     
-    // store the latest stop watch measurement
-    eeprom_25LC256_write(addr, (uint8_t*)pSw, sizeof(sw_t));
+    // take this as record if this is the first one inside the EEPROM
+    if(addr == 0x0004)
+    {
+        eeprom_25LC256_write(0x0002, (uint8_t*)addr, 2);
+    }
+    
+    // store the latest measurement
+    eeprom_25LC256_write(addr, (uint8_t*)pSw, SIZE_OF_SW);
     
     // update the address of the next free slot
-    addr += sizeof(sw_t);
+    addr += SIZE_OF_SW;
     
     // update the address pointer (next free slot)
-    eeprom_25LC256_set_addr_ptr(addr);
+    __func_set_addr_ptr(addr);
     
     return addr;
+}
+
+//..............................................................................
+
+static bool __func_is_new_record (sw_t *pSw)
+{
+    bool new_rec = false;
+    uint16_t addr;
+    sw_t rec;
+    
+    // get the latest record (abort if no latest record was found)
+    if( __func_get_record(&rec) )
+    {
+        return new_rec;
+    }
+    
+    // check if the new measurement is a new record
+    if( pSw->m < rec.m)
+    {
+        new_rec = true;
+    }
+    else if( pSw->m == rec.m )
+    {
+        if( pSw->s < rec.s )
+        {
+            new_rec = true;
+        }
+        else if( pSw->s == rec.s )
+        {
+            if( pSw->ms < rec.ms )
+            {
+                new_rec = true;
+            }
+        }
+    }
+    
+    // update the record + address pointer if new record
+    if( new_rec )
+    {
+        // get the next free slot
+        addr = __func_get_addr_ptr();
+        
+        // store the new measurement
+        eeprom_25LC256_write(addr, (uint8_t*)(&rec), SIZE_OF_SW);
+        
+        // update the record address to this slot
+        eeprom_25LC256_write(0x0002, (uint8_t*)(&addr), 2);
+        
+        // and increment the next free slot address
+        addr += SIZE_OF_SW;
+        __func_set_addr_ptr(addr);
+    }    
+    
+    return new_rec;
+}
+
+//..............................................................................
+
+
+static uint8_t __func_get_record (sw_t *pRec)
+{
+    uint16_t addr;
+
+    // read the address pointer of the current record
+    eeprom_25LC256_read(0x0002, (uint8_t*)(&addr), 2);
+    
+    // abort if the record address pointer is 0x0000
+    // (this means there is no storred record/data inside the EEPROM)
+    if(addr == 0x0000)
+    {
+        return 1;
+    }
+
+    // read the current record (shortest measured time)
+    eeprom_25LC256_read(addr, (uint8_t*)pRec, SIZE_OF_SW);
+    
+    return 0;
+}
+
+//..............................................................................
+
+static uint16_t __func_get_addr_ptr (void)
+{
+    uint16_t addr_ptr;
+    
+    eeprom_25LC256_read(0x0000, (uint8_t*)(&addr_ptr), 2);
+    
+    return addr_ptr;
+}
+
+//..............................................................................
+
+static void __func_set_addr_ptr (uint16_t addr_ptr)
+{
+    eeprom_25LC256_write(0x0000, (uint8_t*)(&addr_ptr), 2);
+}
+
+//..............................................................................
+
+static void __func_clear_eeprom (void)
+{
+    uint8_t buf [2] = {0x00, 0x00};
+    
+    // reset the next free slot to address 0x0004
+    __func_set_addr_ptr(0x0004);
+    
+    // clear the record (this is only a address)
+    eeprom_25LC256_write(0x0002, buf, 2);
 }
 
 //..............................................................................

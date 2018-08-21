@@ -55,57 +55,37 @@
 //*** prototypes ***************************************************************
 
 /**
+ * You are able to read data out of the external EEPROM. You have to specify the 
+ * start address and the length of bytes you want to read. Furthermore you need
+ * to provide a pointer to a buffer with enough memory to store the requested
+ * amount of data.
  * 
- * @param addr
- * @param pBuf
- * @param len
+ * @param addr Start address (16 bit).
+ * @param pBuf Pointer to the data buffer.
+ * @param len Number of bytes to read.
  */
 
 void eeprom_25LC256_read (uint16_t addr, uint8_t *pBuf, uint8_t len);
 
 /**
+ * You are able write data into the external EEPROM. You have to specify the 
+ * start address and the length of bytes you want to write. Furthermore you need
+ * to provide a pointer to a buffer where the data is located.
+ * amount of data.
  * 
- * @param addr
- * @param pBuf
- * @param len
+ * @param addr Start address (16 bit).
+ * @param pBuf Pointer to the data buffer.
+ * @param len Number of bytes to write.
  */
 
 void eeprom_25LC256_write (uint16_t addr, uint8_t *pBuf, uint8_t len);
 
 /**
- * Call this function to clear all saved stop watch measurements. The function
- * wont override all memory of the external EEPROM with e.g. zeros. No.. it will
- * only set the internal address-pointer back to 0. The data inside the external
- * EEPROM remains unchanged.
- */
-
-void eeprom_25LC256_clear (void);
-
-/**
+ * This function will read the status register of the external EEPROM.
  * 
- * @return 
+ * @return Content of the status register.
  */
 
 uint8_t eeprom_25LC56_read_status_reg (void);
-
-/**
- * This function will read the address pointer to the first free address inside
- * the external EEPROM. This address (not a pointer) can be used to store the
- * next data into the external EEPROM.
- * 
- * @return The 16 bit address to the next free slot inside the ext. EEPROM
- */
-
-uint16_t eeprom_25LC256_get_addr_ptr (void);
-
-/**
- * You can update the address value that informs about the next free address
- * slot inside the external EEPROM. This function will be called if new data
- * was written into the external EEPROM.
- * 
- * @param addr_ptr New address to the next free slot inside the ext. EEPROM
- */
-
-void eeprom_25LC256_set_addr_ptr (uint16_t addr_ptr);
 
 #endif

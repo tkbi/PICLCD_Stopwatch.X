@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include "eeprom.h"
 #include "spi.h"
+#include "func.h"
 
 //*** prototypes ***************************************************************
 
@@ -132,32 +133,6 @@ uint8_t eeprom_25LC56_read_status_reg (void)
     
     return buf;
 }
-
-//..............................................................................
-
-void eeprom_25LC256_clear (void)
-{
-    eeprom_25LC256_set_addr_ptr(0x0002);
-}
-
-//..............................................................................
-
-uint16_t eeprom_25LC256_get_addr_ptr (void)
-{
-    uint16_t addr_ptr;
-    
-    eeprom_25LC256_read(0x0000, (uint8_t*)(&addr_ptr), 2);
-    
-    return addr_ptr;
-}
-
-//..............................................................................
-
-void eeprom_25LC256_set_addr_ptr (uint16_t addr_ptr)
-{
-    eeprom_25LC256_write(0x0000, (uint8_t*)(&addr_ptr), 2);
-}
-
 //*** static functions *********************************************************
 
 static void __eeprom_25LC56_set_wel (void)

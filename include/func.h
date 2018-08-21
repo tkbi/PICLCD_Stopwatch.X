@@ -58,6 +58,7 @@
 #define SW_STATE_CLR            5   
 #define SW_STATE_CLRD           6
 #define SW_STATE_SAVED          7
+#define SW_STATE_RECORD         8
 
 // some time definitions (x*10ms) switch automatically from a to b after ..
 #define IDLE_TO_SLEEP_TIME      1500    // idle     -> sleep
@@ -65,6 +66,7 @@
 #define CLEAR_TO_IDLE_TIME      800     // clear    -> idle
 #define CLEARED_TO_IDLE_TIME    300     // cleared  -> idle
 #define SAVED_TO_IDLE_TIME      300     // saved    -> idle
+#define RECORD_TO_IDLE_TIME     300     // record   -> idle
 
 //*** typedef ******************************************************************
 
@@ -75,6 +77,9 @@ typedef struct sw_s
     uint8_t m;
     
 } sw_t;
+
+// sizeof(sw_t)
+#define SIZE_OF_SW  4
 
 //*** extern *******************************************************************
 
