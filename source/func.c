@@ -651,6 +651,8 @@ static char* __func_uint16_to_dec (uint16_t val)
 
 static void __func_auto_time_behaviour (void)
 {
+    bool go_idle = false;
+
     switch(state)
     {
         case SW_STATE_IDLE:
@@ -664,23 +666,12 @@ static void __func_auto_time_behaviour (void)
             break;
         }
 
-        case SW_STATE_RUN:
-        {
-            break;
-        }
-
         case SW_STATE_STOP:
         {
             // time to go from stop to idle?
             if(state_cnt > STOP_TO_IDLE_TIME)
             {
-                state_cnt = 0;
-
-                // clear the stop watch
-                __func_clear_sw(&sWatch);
-                func_disp_sw();
-
-                state = SW_STATE_IDLE;
+                go_idle = true;
                 
                 #ifdef DEBUG
                     uart_print("new state (auto): STOP -> IDLE\n");
@@ -695,13 +686,7 @@ static void __func_auto_time_behaviour (void)
             // time to leave "Clear?" state (because of no user confirmation)
             if(state_cnt > CLEAR_TO_IDLE_TIME)
             {                
-                state_cnt = 0;
-
-                // display the resetted time
-                __func_clear_sw(&sWatch);
-                func_disp_sw();
-
-                state = SW_STATE_IDLE;
+                go_idle = true;
                 
                 #ifdef DEBUG
                     uart_print("state (auto): CLEAR -> IDLE\n");
@@ -716,13 +701,7 @@ static void __func_auto_time_behaviour (void)
             // time to leave "Cleard!" state
             if(state_cnt > CLEARED_TO_IDLE_TIME)
             {
-                state_cnt = 0;
-
-                // display the resetted time
-                __func_clear_sw(&sWatch);
-                func_disp_sw();
-
-                state = SW_STATE_IDLE;
+                go_idle = true;
                 
                 #ifdef DEBUG
                     uart_print("state (auto): CLEARED -> IDLE\n");
@@ -736,13 +715,7 @@ static void __func_auto_time_behaviour (void)
         {
             if(state_cnt > SAVED_TO_IDLE_TIME)
             {
-                state_cnt = 0;
-
-                // display the resetted time
-                __func_clear_sw(&sWatch);
-                func_disp_sw();
-
-                state = SW_STATE_IDLE;
+                go_idle = true;
                 
                 #ifdef DEBUG
                     uart_print("state (auto): SAVED -> IDLE\n");
@@ -756,13 +729,7 @@ static void __func_auto_time_behaviour (void)
         {
             if(state_cnt > RECORD_TO_IDLE_TIME)
             {
-                state_cnt = 0;
-
-                // display the resetted time
-                __func_clear_sw(&sWatch);
-                func_disp_sw();
-
-                state = SW_STATE_IDLE;
+                go_idle = true;
                 
                 #ifdef DEBUG
                     uart_print("state (auto): RECORD -> IDLE\n");
@@ -771,6 +738,19 @@ static void __func_auto_time_behaviour (void)
             
             break;
         }
+        
+        default: break;
+    }
+    
+    if(go_idle)
+    {
+        state_cnt = 0;
+
+        // display the resetted time
+        __func_clear_sw(&sWatch);
+        func_disp_sw();
+
+        state = SW_STATE_IDLE;
     }
 }
 
