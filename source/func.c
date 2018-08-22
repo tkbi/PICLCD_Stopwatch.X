@@ -42,7 +42,7 @@ uint8_t uartBuf;
 static uint8_t state = SW_STATE_IDLE;
 
 // holds the current measurement
-static sw_t sWatch = {0};
+static __pack sw_t sWatch = {0};
 
 // last pressed/released key bitfields
 static uint8_t lastPressedKey = 0;
@@ -783,19 +783,8 @@ static uint16_t __func_save (sw_t *pSw)
     // take this as record if this is the first one inside the EEPROM
     if(addr == 0x0004)
     {
-        eeprom_25LC256_write(0x0002, (uint8_t*)addr, 2);
-        uart_print("r@: ");
-        uart_print(__func_time_to_str(pSw));
+        eeprom_25LC256_write(0x0002, (uint8_t*)(&addr), 2);
     }
-    else
-    {
-        uart_print("m: ");
-        uart_print(__func_time_to_str(pSw));
-    }
-    
-    uart_print(" s@ ");
-    uart_print(__func_uint16_to_dec(addr));
-    uart_print("\n");
     
     // store the latest measurement
     eeprom_25LC256_write(addr, (uint8_t*)pSw, SIZE_OF_SW);
@@ -826,14 +815,6 @@ static bool __func_is_new_record (sw_t *pSw)
 
         return new_rec;
     }
-    
-    uart_print("new: ");
-    uart_print(__func_time_to_str(pSw));
-    uart_print("\n");    
-    
-    uart_print("r-@: ");
-    uart_print(__func_time_to_str(&rec));
-    uart_print("\n");
     
     // check if the new measurement is a new record
     if(pSw->m < rec.m)
@@ -866,7 +847,7 @@ static bool __func_is_new_record (sw_t *pSw)
         addr = __func_get_addr_ptr();
         
         // store the new measurement
-        eeprom_25LC256_write(addr, (uint8_t*)(&rec), SIZE_OF_SW);
+        eeprom_25LC256_write(addr, (uint8_t*)pSw, SIZE_OF_SW);
         
         // update the record address to this slot
         eeprom_25LC256_write(0x0002, (uint8_t*)(&addr), 2);
@@ -874,10 +855,6 @@ static bool __func_is_new_record (sw_t *pSw)
         // and increment the next free slot address
         addr += SIZE_OF_SW;
         __func_set_addr_ptr(addr);
-        
-        uart_print("f@ ");
-        uart_print(__func_uint16_to_dec(addr));
-        uart_print("\n");
     }    
     
     return new_rec;
@@ -897,13 +874,8 @@ static uint8_t __func_get_record (sw_t *pRec)
     // (this means there is no storred record/data inside the EEPROM)
     if(addr == 0x0000)
     {
-        uart_print("no r\n");
         return 1;
     }
-
-    uart_print("r@ ");
-    uart_print(__func_uint16_to_dec(addr));
-    uart_print("\n");
 
     // read the current record (shortest measured time)
     eeprom_25LC256_read(addr, (uint8_t*)pRec, SIZE_OF_SW);

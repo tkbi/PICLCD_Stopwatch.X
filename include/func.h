@@ -72,14 +72,14 @@
 
 typedef struct sw_s
 {
-    uint16_t ms;
+    uint8_t ms;
     uint8_t s;
     uint8_t m;
     
 } sw_t;
 
 // sizeof(sw_t)
-#define SIZE_OF_SW  4
+#define SIZE_OF_SW  3
 
 //*** extern *******************************************************************
 
