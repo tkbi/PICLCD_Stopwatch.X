@@ -96,7 +96,7 @@ void uart_tx (void)
 {
     // create a new 5ms timeout
     uint8_t timeout = timer0_new_timeout(5);
-
+    
     // until there is data in the fifo or a timeout occurred
     while( pOutBufRd != pOutBufWr && !timer0_get_timeout(timeout) )
     {
