@@ -56,7 +56,7 @@ static uint16_t debCntPB = 0;
 static uint16_t state_cnt = 0;
 
 // this buffer is used for converting numbers to its string representation
-static char tmp_buf[8];
+static char gBuf[8];
 
 //*** prototypes ***************************************************************
 
@@ -274,9 +274,6 @@ void func_disp_sw (void)
 
 static void __func_update_stopwatch (void)
 {
-    // to do: only update the changed chars instead of every time re-writing
-    // the hole display
-    
     // increment millisecond (+1 => +10ms)
     sWatch.ms += 1;
     
@@ -308,18 +305,16 @@ static void __func_update_stopwatch (void)
 
 static char* __func_time_to_str (sw_t *pSw)
 {
-    static char buf[8];
+    gBuf[0] = (pSw->m  / 10) + '0';
+    gBuf[1] = (pSw->m  % 10) + '0';
+    gBuf[2] = ':';
+    gBuf[3] = (pSw->s  / 10) + '0';
+    gBuf[4] = (pSw->s  % 10) + '0';
+    gBuf[5] = ':';
+    gBuf[6] = (pSw->ms / 10) + '0';
+    gBuf[7] = (pSw->ms % 10) + '0';
     
-    buf[0] = (pSw->m  / 10) + '0';
-    buf[1] = (pSw->m  % 10) + '0';
-    buf[2] = ':';
-    buf[3] = (pSw->s  / 10) + '0';
-    buf[4] = (pSw->s  % 10) + '0';
-    buf[5] = ':';
-    buf[6] = (pSw->ms / 10) + '0';
-    buf[7] = (pSw->ms % 10) + '0';
-    
-    return buf;
+    return gBuf;
 }
 
 //..............................................................................
@@ -632,19 +627,19 @@ static void __func_sleep (void)
 
 static char* __func_uint16_to_dec (uint16_t val)
 {
-    tmp_buf[0] = val/10000 + '0';
+    gBuf[0] = val/10000 + '0';
     val %= 10000;
-    tmp_buf[1] = val/ 1000 + '0';
+    gBuf[1] = val/ 1000 + '0';
     val %=  1000;
-    tmp_buf[2] = val/  100 + '0';
+    gBuf[2] = val/  100 + '0';
     val %=   100;
-    tmp_buf[3] = val/   10 + '0';
+    gBuf[3] = val/   10 + '0';
     val %=    10;
-    tmp_buf[4] = val       + '0';
+    gBuf[4] = val       + '0';
     
-    tmp_buf[5] = '\0';
+    gBuf[5] = '\0';
 
-    return tmp_buf;
+    return gBuf;
 }
 
 //..............................................................................
