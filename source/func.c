@@ -31,6 +31,7 @@
 #include "timer.h"
 #include "uart.h"
 #include "eeprom.h"
+#include "build.h"
 
 //*** global variables *********************************************************
 
@@ -207,6 +208,16 @@ static void __func_set_addr_ptr (uint16_t addr_ptr);
 
 static void __func_clear_eeprom (void);
 
+/*
+ * This function will handle the remote messages. If the stopwatch gets remote
+ * Messages from the LCD-Stopwatch Remote (PC Tool) this messages will be
+ * handled within this function.
+ * 
+ * @return True if the receive buffer is not yet empty otherwise false.
+ */
+
+static bool __func_remote_sm (void);
+
 //*** functions ****************************************************************
 
 void func_workload (void)
@@ -255,6 +266,15 @@ void func_workload (void)
     {
         // the iTX flag will be cleared inside uart_tx (if buffer is empty)
         uart_tx();
+    }
+    
+    // some data over the UART interface was received
+    if( status.iRx )
+    {
+        state_cnt = 0;
+        
+        // handle incomming messages
+        status.iRx = __func_remote_sm();
     }
     
     // manage the automatically time behaviour of the stop watch
@@ -887,6 +907,96 @@ static void __func_clear_eeprom (void)
     
     // clear the record (this is only a address)
     eeprom_25LC256_write(0x0002, buf, 2);
+}
+
+//..............................................................................
+
+static bool __func_remote_sm (void)
+{
+    static uint8_t remState = REM_STATE_IDLE;
+    static int8_t cmd = 0;
+    
+    switch(remState)
+    {
+        // ignore everything else than '<' as first char
+        case REM_STATE_IDLE:
+        {
+            if(*pInBufRd == '<')
+            {
+                remState = REM_STATE_START;
+            }
+            break;
+        }
+        // the message started, now read the command number
+        case REM_STATE_START:
+        {
+            cmd = *pInBufRd;
+            remState = REM_STATE_END;
+            break;
+        }
+        // now wait/read for the end char '>'
+        case REM_STATE_END:
+        {
+            if(*pInBufRd == '>')
+            {
+                // handle the command
+                switch(cmd)
+                {
+                    // ping
+                    case '0':
+                    {
+                        uart_print("<0>");
+                        break;
+                    }
+                    // read system info
+                    case '1':
+                    {
+                        uart_print("<1|");
+                        uart_print(__func_uint16_to_dec(BUILD_NR));
+                        uart_print("|");
+                        uart_print(BUILD_DATE);
+                        uart_print(">");
+                        break;
+                    }
+                    // erase memory
+                    case '2':
+                    {
+                        break;
+                    }
+                    // 
+                    case '3':
+                    {
+                        break;
+                    }
+                    // 
+                    case '4':
+                    {
+                        break;
+                    }
+                    // 
+                    case '5':
+                    {
+                        break;
+                    }
+                    // 
+                    case '6':
+                    {
+                        break;
+                    }
+                    // unknown command
+                    default: break;
+                }
+            }
+            
+            remState = REM_STATE_IDLE;
+            break;
+        }
+    }
+    
+    // next time next char
+    pInBufRd++;
+    
+    return (pInBufRd != pInBufWr);
 }
 
 //..............................................................................

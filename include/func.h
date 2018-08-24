@@ -60,6 +60,11 @@
 #define SW_STATE_SAVED          7
 #define SW_STATE_RECORD         8
 
+// remote message receive state
+#define REM_STATE_IDLE          0
+#define REM_STATE_START         1
+#define REM_STATE_END           2
+
 // some time definitions (x*10ms) switch automatically from a to b after ..
 #define IDLE_TO_SLEEP_TIME      1500    // idle     -> sleep
 #define STOP_TO_IDLE_TIME       1000    // stop     -> idle

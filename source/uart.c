@@ -57,7 +57,7 @@ void uart_init (void)
     IPR1bits.RC1IP = 1;
 
     // enable the receive interrupt
-    PIE1bits.RC1IE = 0;
+    PIE1bits.RC1IE = 1;
 }
 
 //..............................................................................
