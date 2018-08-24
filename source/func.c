@@ -610,6 +610,9 @@ static void __func_sleep (void)
     // clear a may existing INT2 flag
     INTCON3bits.INT2IF = 0;
 
+    // enable auto wake up (UART receive)
+    BAUDCONbits.WUE = 1;
+    
     SLEEP();
     NOP();
     
