@@ -398,6 +398,9 @@ static bool __func_sw_state_machine (void)
         case SW_STATE_PRE_IDLE:
         {
             state = SW_STATE_IDLE;
+            
+            // send the "back in idle cmd"
+            uart_print("<7>");
 
             #ifdef DEBUG
                 uart_print("state: PRE IDLE -> IDLE\n");
@@ -769,6 +772,9 @@ static void __func_auto_time_behaviour (void)
         func_disp_sw();
 
         state = SW_STATE_IDLE;
+        
+        // send the "back in idle cmd"
+        uart_print("<7>");
     }
 }
 
@@ -918,6 +924,7 @@ static bool __func_remote_sm (void)
 {
     static uint8_t remState = REM_STATE_IDLE;
     static int8_t cmd = 0;
+    uint16_t addr;
     
     switch(remState)
     {
@@ -964,26 +971,46 @@ static bool __func_remote_sm (void)
                     // erase memory
                     case '2':
                     {
+                        state = SW_STATE_CLRD;
+                        __func_clear_eeprom();
+                        lcd_write("Erased  ",0);
+                        uart_print("<2>");
                         break;
                     }
-                    // 
+                    // export data
                     case '3':
                     {
                         break;
                     }
-                    // 
+                    // start measurement
                     case '4':
                     {
+                        state = SW_STATE_RUN;
+                        uart_print("<4>");
                         break;
                     }
-                    // 
+                    // stop measurement
                     case '5':
                     {
+                        state = SW_STATE_STOP;
+                        uart_print("<5|");
+                        uart_print(__func_time_to_str(&sWatch));
+                        uart_print(">");
                         break;
                     }
-                    // 
+                    // save measurement
                     case '6':
                     {
+                        state = SW_STATE_SAVED;
+                        
+                        // save the last sw-value into the EEPROM
+                        addr = __func_save(&sWatch);
+
+                        // display an info message (-> #xxxx)
+                        lcd_write(__func_uint16_to_dec((addr-2)>>2), 3);
+                        lcd_write("-> #",0);  
+                        
+                        uart_print("<6>");
                         break;
                     }
                     // unknown command
