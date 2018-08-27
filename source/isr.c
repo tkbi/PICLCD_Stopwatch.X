@@ -46,18 +46,16 @@ void __interrupt() highPrio (void)
         status.iRx = true;
 
         // store the received byte into the fifo (this will also clear RCIF)
-        *pInBufWr = RCREG;
+        inBuf[inWr] = RCREG;
+        
+        // no, go to the next index
+        inWr++;
         
         // already on the last index?
-        if( pInBufWr == &inBuf[UART_BUF_MAX-1] )
+        if( inWr == UART_BUF_MAX )
         {
             // yes, start at the beginning
-            pInBufWr = inBuf;
-        }
-        else
-        {
-            // no, go to the next index
-            pInBufWr++;
+            inWr = 0;
         }
     }
 }

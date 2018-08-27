@@ -32,15 +32,15 @@
 
 // fifo / ring buffer for rx
 char inBuf [UART_BUF_MAX];
-char *pInBufWr = inBuf;
-char *pInBufRd = inBuf;
+uint8_t inWr = 0;
+uint8_t inRd = 0;
 
 //*** static variables *********************************************************
 
 // fifo / ring buffer for tx
 static char outBuf [UART_BUF_MAX];
-static char *pOutBufWr = outBuf;
-static char *pOutBufRd = outBuf;
+uint8_t outWr = 0;
+uint8_t outRd = 0;
 
 //*** functions ****************************************************************
 
@@ -72,18 +72,14 @@ void uart_print (char *pBuf)
 
     while( *pBuf )
     {
-        *pOutBufWr = *pBuf;
+        outBuf[outWr] = *pBuf;       
+        outWr++;
         
         // already on the last index?
-        if( pOutBufWr == &outBuf[UART_BUF_MAX-1] )
+        if( outWr == UART_BUF_MAX )
         {
             // yes, start at the beginning
-            pOutBufWr = outBuf;
-        }
-        else
-        {
-            // no, go to the next index
-            pOutBufWr++;
+            outWr = 0;
         }
 
         pBuf++;
@@ -98,30 +94,26 @@ void uart_tx (void)
     uint8_t timeout = timer0_new_timeout(5);
     
     // until there is data in the fifo or a timeout occurred
-    while( pOutBufRd != pOutBufWr && !timer0_get_timeout(timeout) )
+    while( outRd != outWr && !timer0_get_timeout(timeout) )
     {
         // ready to send new data?
         if(PIR1bits.TX1IF)
         {
             /*load the byte into the buffer*/
-            TXREG1 = *pOutBufRd;
+            TXREG1 = outBuf[outRd];
+            outRd++;
             
             // already on the last index?
-            if( pOutBufRd == &outBuf[UART_BUF_MAX-1] )
+            if( outRd == UART_BUF_MAX )
             {
                 // yes, start at the beginning
-                pOutBufRd = outBuf;
-            }
-            else
-            {
-                // no, go to the next index
-                pOutBufRd++;
+                outRd = 0;
             }
         }     
     }
     
     // if the buffer is empty clear "data in uart tx buffer available" flag
-    if( pOutBufRd == pOutBufWr )
+    if( outRd == outWr )
     {
         status.iTx = false;
     }

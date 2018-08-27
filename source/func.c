@@ -774,7 +774,7 @@ static void __func_auto_time_behaviour (void)
         state = SW_STATE_IDLE;
         
         // send the "back in idle cmd"
-        uart_print("<7>");
+        uart_print("<8>");
     }
 }
 
@@ -925,13 +925,14 @@ static bool __func_remote_sm (void)
     static uint8_t remState = REM_STATE_IDLE;
     static int8_t cmd = 0;
     uint16_t addr;
+    sw_t tmpSw;
     
     switch(remState)
     {
         // ignore everything else than '<' as first char
         case REM_STATE_IDLE:
         {
-            if(*pInBufRd == '<')
+            if(inBuf[inRd] == '<')
             {
                 remState = REM_STATE_START;
             }
@@ -940,14 +941,14 @@ static bool __func_remote_sm (void)
         // the message started, now read the command number
         case REM_STATE_START:
         {
-            cmd = *pInBufRd;
+            cmd = inBuf[inRd];
             remState = REM_STATE_END;
             break;
         }
         // now wait/read for the end char '>'
         case REM_STATE_END:
         {
-            if(*pInBufRd == '>')
+            if(inBuf[inRd] == '>')
             {
                 // handle the command
                 switch(cmd)
@@ -966,40 +967,62 @@ static bool __func_remote_sm (void)
                         uart_print("|");
                         uart_print(BUILD_DATE);
                         uart_print(">");
+                        
+                        break;
+                    }
+                    // read eeprom info
+                    case '2':
+                    {
+                        uart_print("<2|");
+                        
+                        // read the address of the next free EEPROM slot
+                        eeprom_25LC256_read(0x0000, (uint8_t*)(&addr), 2);
+                        
+                        // print the number of saved measurements              
+                        uart_print(__func_uint16_to_dec((addr-4) / 3));
+                        
+                        uart_print("|");
+                        
+                        // read out the record
+                        __func_get_record(&tmpSw);
+                        uart_print(__func_time_to_str(&tmpSw));
+                        
+                        uart_print(">");
+
                         break;
                     }
                     // erase memory
-                    case '2':
+                    case '3':
                     {
                         state = SW_STATE_CLRD;
                         __func_clear_eeprom();
                         lcd_write("Erased  ",0);
-                        uart_print("<2>");
+                        uart_print("<3>");
                         break;
                     }
                     // export data
-                    case '3':
+                    case '4':
                     {
                         break;
                     }
                     // start measurement
-                    case '4':
+                    case '5':
                     {
                         state = SW_STATE_RUN;
-                        uart_print("<4>");
+                        uart_print("<5>");
                         break;
                     }
                     // stop measurement
-                    case '5':
+                    case '6':
                     {
                         state = SW_STATE_STOP;
-                        uart_print("<5|");
+                        uart_print("<6|");
                         uart_print(__func_time_to_str(&sWatch));
                         uart_print(">");
                         break;
                     }
                     // save measurement
-                    case '6':
+                    case '7':
                     {
                         state = SW_STATE_SAVED;
                         
@@ -1010,7 +1033,7 @@ static bool __func_remote_sm (void)
                         lcd_write(__func_uint16_to_dec((addr-2)>>2), 3);
                         lcd_write("-> #",0);  
                         
-                        uart_print("<6>");
+                        uart_print("<7>");
                         break;
                     }
                     // unknown command
@@ -1024,9 +1047,15 @@ static bool __func_remote_sm (void)
     }
     
     // next time next char
-    pInBufRd++;
+    inRd++;
     
-    return (pInBufRd != pInBufWr);
+    // check if inRd is at the limit
+    if(inRd == UART_BUF_MAX)
+    {
+        inRd = 0;
+    }
+    
+    return (inRd != inWr);
 }
 
 //..............................................................................

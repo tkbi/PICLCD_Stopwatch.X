@@ -32,13 +32,13 @@
 
 //*** define *******************************************************************
 
-#define UART_BUF_MAX    32
+#define UART_BUF_MAX    48
 
 //*** extern *******************************************************************
 
 extern char inBuf [UART_BUF_MAX];
-extern char *pInBufWr;
-extern char *pInBufRd;
+extern uint8_t inWr;
+extern uint8_t inRd;
 
 //*** prototypes ***************************************************************
 
