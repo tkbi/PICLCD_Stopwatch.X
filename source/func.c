@@ -57,7 +57,7 @@ static uint16_t debCntPB = 0;
 static uint16_t state_cnt = 0;
 
 // this buffer is used for converting numbers to its string representation
-static char gBuf[8];
+static char gBuf[9];
 
 //*** prototypes ***************************************************************
 
@@ -333,6 +333,7 @@ static char* __func_time_to_str (sw_t *pSw)
     gBuf[5] = ':';
     gBuf[6] = (pSw->ms / 10) + '0';
     gBuf[7] = (pSw->ms % 10) + '0';
+    gBuf[8] = '\0';
     
     return gBuf;
 }
@@ -1018,7 +1019,16 @@ static bool __func_remote_sm (void)
                         state = SW_STATE_STOP;
                         uart_print("<6|");
                         uart_print(__func_time_to_str(&sWatch));
-                        uart_print(">");
+                        
+                        if( __func_is_new_record(&sWatch) )
+                        {
+                            uart_print("|1>");
+                        }
+                        else
+                        {
+                            uart_print("|0>");
+                        }
+
                         break;
                     }
                     // save measurement
