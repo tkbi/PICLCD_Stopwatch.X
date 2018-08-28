@@ -71,7 +71,9 @@
 #define CLEAR_TO_IDLE_TIME      800     // clear    -> idle
 #define CLEARED_TO_IDLE_TIME    300     // cleared  -> idle
 #define SAVED_TO_IDLE_TIME      300     // saved    -> idle
-#define RECORD_TO_IDLE_TIME     300     // record   -> idle
+
+#define REC_TOGGLE_CNT          10  
+#define RECORD_TOGGLE_TIME      (STOP_TO_IDLE_TIME/REC_TOGGLE_CNT) 
 
 //*** typedef ******************************************************************
 

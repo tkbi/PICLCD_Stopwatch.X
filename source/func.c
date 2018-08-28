@@ -573,11 +573,9 @@ static bool __func_sw_state_machine (void)
         
         case SW_STATE_RECORD:
         {      
-            if(!PB)
-            {
-                lcd_write("Record! ",0);
-            }
-            else
+            lcd_write("Record! ",0);
+            
+            if(PB)
             {
                 // display again the 00:00:00
                 __func_clear_sw(&sWatch);
@@ -586,7 +584,7 @@ static bool __func_sw_state_machine (void)
                 state = SW_STATE_PRE_IDLE;
 
                 #ifdef DEBUG
-                    uart_print("state: SAVED -> IDLE\n");
+                    uart_print("state: RECORD0 -> PRE_IDLE\n");
                 #endif
             }
 
@@ -674,6 +672,7 @@ static char* __func_uint16_to_dec (uint16_t val)
 static void __func_auto_time_behaviour (void)
 {
     bool go_idle = false;
+    static uint8_t rec_state_toggle_cnt = REC_TOGGLE_CNT; 
 
     switch(state)
     {
@@ -749,15 +748,30 @@ static void __func_auto_time_behaviour (void)
         
         case SW_STATE_RECORD:
         {
-            if(state_cnt > RECORD_TO_IDLE_TIME)
+            if(state_cnt > RECORD_TOGGLE_TIME)
             {
-                go_idle = true;
-                
-                #ifdef DEBUG
-                    uart_print("state (auto): RECORD -> IDLE\n");
-                #endif
+                state_cnt = 0;
+
+                if(rec_state_toggle_cnt)
+                {
+                    rec_state_toggle_cnt--;
+                    
+                    if(rec_state_toggle_cnt % 2)
+                    {
+                        func_disp_sw();
+                    }
+                    else
+                    {
+                        lcd_write("Record! ",0);
+                    }
+                }
+                else
+                {
+                    rec_state_toggle_cnt = REC_TOGGLE_CNT;
+                    go_idle = true;
+                }
             }
-            
+
             break;
         }
         
