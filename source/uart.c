@@ -88,14 +88,20 @@ void uart_print (char *pBuf)
 
 //..............................................................................
 
-void uart_tx (void)
+void uart_tx (uint16_t tmo)
 {
     // create a new 5ms timeout
-    uint8_t timeout = timer0_new_timeout(5);
+    uint8_t timeout = timer0_new_timeout(tmo);
     
-    // until there is data in the fifo or a timeout occurred
-    while( outRd != outWr && !timer0_get_timeout(timeout) )
+    // until there is data in the fifo
+    while( outRd != outWr )
     {
+        // break if a timeout occurred
+        if(timer0_get_timeout(timeout) && tmo)
+        {
+            break;
+        }
+        
         // ready to send new data?
         if(PIR1bits.TX1IF)
         {

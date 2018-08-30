@@ -265,7 +265,7 @@ void func_workload (void)
     if( status.iTx )
     {
         // the iTX flag will be cleared inside uart_tx (if buffer is empty)
-        uart_tx();
+        uart_tx(5);
     }
     
     // some data over the UART interface was received
@@ -939,7 +939,7 @@ static bool __func_remote_sm (void)
 {
     static uint8_t remState = REM_STATE_IDLE;
     static int8_t cmd = 0;
-    uint16_t addr;
+    uint16_t addr, i;
     sw_t tmpSw;
     
     switch(remState)
@@ -993,8 +993,8 @@ static bool __func_remote_sm (void)
                         // read the address of the next free EEPROM slot
                         eeprom_25LC256_read(0x0000, (uint8_t*)(&addr), 2);
                         
-                        // print the number of saved measurements              
-                        uart_print(__func_uint16_to_dec((addr-4) / 3));
+                        // print the number of saved measurements 
+                        uart_print(__func_uint16_to_dec((addr-4) / SIZE_OF_SW));
                         
                         uart_print("|");
                         
@@ -1018,6 +1018,40 @@ static bool __func_remote_sm (void)
                     // export data
                     case '4':
                     {
+                        // read the address of the next free EEPROM slot
+                        eeprom_25LC256_read(0x0000, (uint8_t*)(&addr), 2);
+                        
+                        // get the number of saved measurements 
+                        i = (addr-4) / SIZE_OF_SW;
+                        
+                        // send the commando start
+                        uart_print("<4|");
+
+                        // print the number of saved measurements 
+                        uart_print(__func_uint16_to_dec((addr-4) / SIZE_OF_SW));
+                        
+                        // force the PIC to send all bytes NOW
+                        uart_tx(0);  
+                        
+                        // until all measurements were exported
+                        while(i)
+                        {
+                            // get the next measurement
+                            addr -= SIZE_OF_SW;
+                            eeprom_25LC256_read(addr, (uint8_t*)(&tmpSw), SIZE_OF_SW);
+                          
+                            // print the seperator + measurement
+                            uart_print("|");
+                            uart_print(__func_time_to_str(&tmpSw));
+                            uart_tx(0);
+                            
+                            i--;
+                        }
+                        
+                        // send end of command indicator
+                        uart_print(">");
+                        uart_tx(0);
+                        
                         break;
                     }
                     // start measurement

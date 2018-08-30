@@ -63,8 +63,10 @@ void uart_print (char *pBuf);
  * Don't call this function by your own. It will be called within the
  * func_workload function and automatically sends the tx-ringbuffer if data is
  * available and the cpu has some free time.
+ * 
+ * @param tmo Timeout in [ms] for this transceive (0 for no timeout)
  */
 
-void uart_tx (void);
+void uart_tx (uint16_t tmo);
 
 #endif
